@@ -1,27 +1,27 @@
 # Docker Setup
 
-## Перший запуск
-```bash
-cp .env.example .env
-docker compose up --build -d
+## First run
+```powershell
+Copy-Item .env.example .env
+docker-compose up --build -d
 ```
 
-## Запуск
-```bash
-docker compose up -d
+## Run
+```powershell
+docker-compose up -d
 ```
 
-## Стоп
-```bash
-docker compose stop
+## Stop
+```powershell
+docker-compose stop
 ```
 
-## Видалення (контейнер + мережа)
-```bash
-docker compose down
+## Remove
+```powershell
+docker-compose down
 ```
 
-## Повне видалення (з образом)
-```bash
-docker compose down --rmi local
+## Remove with image
+```powershell
+docker-compose down --rmi local
 ```
