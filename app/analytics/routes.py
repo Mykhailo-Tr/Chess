@@ -6,6 +6,7 @@ from sqlalchemy import case
 
 from app.analytics.color_analysis import analyze_by_color
 from app.analytics.rating_history import parse_rating_history
+from app.analytics.session_stats import build_calendar_heatmap, build_session_stats
 from app.analytics import analytics_bp
 from app.analytics.reports import latest_or_create_report
 from app.lichess.client import LichessClient
@@ -75,3 +76,16 @@ def color_analysis():
     games = _get_user_games()
     color_stats = analyze_by_color(games)
     return render_template("analytics/colors.html", color_stats=color_stats)
+
+
+@analytics_bp.route("/calendar")
+@login_required
+def play_calendar():
+    games = _get_user_games()
+    calendar = build_calendar_heatmap(games)
+    session_stats = build_session_stats(games)
+    return render_template(
+        "analytics/calendar.html",
+        calendar=calendar,
+        session_stats=session_stats,
+    )

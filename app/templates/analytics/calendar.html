@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}Play Calendar{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+    .heatmap-grid {
+        display: grid;
+        grid-template-columns: repeat(52, minmax(0, 1fr));
+        grid-template-rows: repeat(7, minmax(0, 1fr));
+        gap: 0.2rem;
+    }
+
+    .heatmap-cell {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border-radius: 0.2rem;
+        border: 1px solid rgba(15, 23, 42, 0.55);
+    }
+</style>
+{% endblock %}
+{% block content %}
+<h2 class="text-2xl font-semibold">Play Calendar</h2>
+<p class="text-slate-400 text-sm mt-1">Game activity and winrate timing patterns over the last year.</p>
+
+<section class="card mt-6">
+    <h3 class="text-lg font-semibold">Activity Heatmap</h3>
+    <div class="mt-4">
+        <div id="heatmapGrid" class="heatmap-grid"></div>
+    </div>
+    <div class="mt-3 flex items-center gap-2 text-xs text-slate-400">
+        <span>Less</span>
+        <span class="heatmap-cell" style="width: 12px; background:#0e1117"></span>
+        <span class="heatmap-cell" style="width: 12px; background:#163328"></span>
+        <span class="heatmap-cell" style="width: 12px; background:#1f5f46"></span>
+        <span class="heatmap-cell" style="width: 12px; background:#178c63"></span>
+        <span class="heatmap-cell" style="width: 12px; background:#19c37d"></span>
+        <span>More</span>
+    </div>
+</section>
+
+<section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-4">
+    <article class="card">
+        <p class="metric-label">Best Hour</p>
+        {% if session_stats.best_hour %}
+        <p class="metric-value">{{ "%02d"|format(session_stats.best_hour.hour) }}:00</p>
+        <p class="text-xs text-slate-400 mt-2">{{ session_stats.best_hour.winrate }}% over {{ session_stats.best_hour.count }} games</p>
+        {% else %}
+        <p class="metric-value">N/A</p>
+        <p class="text-xs text-slate-400 mt-2">Need at least 2 games in an hour bucket.</p>
+        {% endif %}
+    </article>
+    <article class="card">
+        <p class="metric-label">Worst Hour</p>
+        {% if session_stats.worst_hour %}
+        <p class="metric-value">{{ "%02d"|format(session_stats.worst_hour.hour) }}:00</p>
+        <p class="text-xs text-slate-400 mt-2">{{ session_stats.worst_hour.winrate }}% over {{ session_stats.worst_hour.count }} games</p>
+        {% else %}
+        <p class="metric-value">N/A</p>
+        <p class="text-xs text-slate-400 mt-2">Need at least 2 games in an hour bucket.</p>
+        {% endif %}
+    </article>
+    <article class="card">
+        <p class="metric-label">Best Weekday</p>
+        {% if session_stats.best_weekday %}
+        <p class="metric-value">{{ session_stats.best_weekday.weekday }}</p>
+        <p class="text-xs text-slate-400 mt-2">{{ session_stats.best_weekday.winrate }}% over {{ session_stats.best_weekday.count }} games</p>
+        {% else %}
+        <p class="metric-value">N/A</p>
+        <p class="text-xs text-slate-400 mt-2">Need at least 2 games in a weekday bucket.</p>
+        {% endif %}
+    </article>
+    <article class="card">
+        <p class="metric-label">Worst Weekday</p>
+        {% if session_stats.worst_weekday %}
+        <p class="metric-value">{{ session_stats.worst_weekday.weekday }}</p>
+        <p class="text-xs text-slate-400 mt-2">{{ session_stats.worst_weekday.winrate }}% over {{ session_stats.worst_weekday.count }} games</p>
+        {% else %}
+        <p class="metric-value">N/A</p>
+        <p class="text-xs text-slate-400 mt-2">Need at least 2 games in a weekday bucket.</p>
+        {% endif %}
+    </article>
+</section>
+
+<section class="card mt-4">
+    <h3 class="text-lg font-semibold">Winrate by Hour</h3>
+    <canvas id="hourWinrateChart" height="110" class="mt-4"></canvas>
+</section>
+
+<section class="card mt-4">
+    <h3 class="text-lg font-semibold">Winrate by Weekday</h3>
+    <canvas id="weekdayWinrateChart" height="110" class="mt-4"></canvas>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const calendarPayload = {{ calendar|tojson }};
+    const sessionStats = {{ session_stats|tojson }};
+
+    const heatmapGrid = document.getElementById("heatmapGrid");
+    const heatmap = calendarPayload.heatmap || {};
+    const maxCount = calendarPayload.max_count || 0;
+    const dates = Object.keys(heatmap).sort().slice(-364);
+    const shades = ["#0e1117", "#163328", "#1f5f46", "#178c63", "#19c37d"];
+
+    function colorForCount(count) {
+        if (count <= 0 || maxCount <= 0) {
+            return shades[0];
+        }
+        const step = Math.ceil((count / maxCount) * 4);
+        return shades[Math.min(4, Math.max(1, step))];
+    }
+
+    dates.forEach(dateKey => {
+        const count = heatmap[dateKey] || 0;
+        const cell = document.createElement("div");
+        cell.className = "heatmap-cell";
+        cell.style.background = colorForCount(count);
+        cell.title = `${dateKey}: ${count} game${count === 1 ? "" : "s"}`;
+        heatmapGrid.appendChild(cell);
+    });
+
+    const hourData = sessionStats.hour || [];
+    new Chart(document.getElementById("hourWinrateChart"), {
+        type: "bar",
+        data: {
+            labels: hourData.map(item => String(item.hour).padStart(2, "0")),
+            datasets: [{
+                label: "Winrate %",
+                data: hourData.map(item => item.winrate),
+                borderRadius: 6,
+                backgroundColor: "rgba(58,154,217,0.78)"
+            }]
+        },
+        options: {
+            plugins: {legend: {display: false}},
+            scales: {
+                x: {ticks: {color: "#9ca3af"}},
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {color: "#9ca3af"}
+                }
+            }
+        }
+    });
+
+    const weekdayData = sessionStats.weekday || [];
+    new Chart(document.getElementById("weekdayWinrateChart"), {
+        type: "bar",
+        data: {
+            labels: weekdayData.map(item => item.weekday),
+            datasets: [{
+                label: "Winrate %",
+                data: weekdayData.map(item => item.winrate),
+                borderRadius: 6,
+                backgroundColor: "rgba(25,195,125,0.78)"
+            }]
+        },
+        options: {
+            plugins: {legend: {display: false}},
+            scales: {
+                x: {ticks: {color: "#9ca3af"}},
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {color: "#9ca3af"}
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
