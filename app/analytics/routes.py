@@ -7,6 +7,8 @@ from flask_login import current_user, login_required
 from sqlalchemy import case
 
 from app.analytics.color_analysis import analyze_by_color
+from app.analytics.eco_heatmap import build_eco_heatmap
+from app.analytics.opponent_analysis import analyze_opponent_strength
 from app.analytics.puzzle_stats import parse_puzzle_dashboard
 from app.analytics.rating_history import parse_rating_history
 from app.analytics.session_stats import build_calendar_heatmap, build_session_stats
@@ -164,4 +166,30 @@ def daily_tips():
         "analytics/tips.html",
         tips=tips,
         today_label=today_label,
+    )
+
+
+@analytics_bp.route("/opponents")
+@login_required
+def opponent_strength():
+    active_speed = _normalize_speed(request.args.get("speed"))
+    games = _get_user_games(speed=active_speed)
+    opponent_stats = analyze_opponent_strength(games)
+    return render_template(
+        "analytics/opponents.html",
+        opponent_stats=opponent_stats,
+        active_speed=active_speed,
+    )
+
+
+@analytics_bp.route("/eco")
+@login_required
+def eco_map():
+    active_speed = _normalize_speed(request.args.get("speed"))
+    games = _get_user_games(speed=active_speed)
+    eco_stats = build_eco_heatmap(games)
+    return render_template(
+        "analytics/eco.html",
+        eco_stats=eco_stats,
+        active_speed=active_speed,
     )

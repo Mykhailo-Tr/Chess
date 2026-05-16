@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Opponents{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<h2 class="text-2xl font-semibold">Opponent Strength</h2>
+<p class="text-slate-400 text-sm mt-1">Winrate profile across rating brackets.</p>
+
+<section class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+    <article class="card">
+        <p class="metric-label">Best Win</p>
+        {% if opponent_stats.best_win %}
+        <p class="metric-value">{{ opponent_stats.best_win.opponent }}</p>
+        <p class="text-xs text-slate-400 mt-2">Rating: {{ opponent_stats.best_win.rating }}</p>
+        {% else %}
+        <p class="metric-value">N/A</p>
+        <p class="text-xs text-slate-400 mt-2">No rated win found.</p>
+        {% endif %}
+    </article>
+    <article class="card">
+        <p class="metric-label">Toughest Loss</p>
+        {% if opponent_stats.toughest_loss %}
+        <p class="metric-value">{{ opponent_stats.toughest_loss.opponent }}</p>
+        <p class="text-xs text-slate-400 mt-2">Rating: {{ opponent_stats.toughest_loss.rating }}</p>
+        {% else %}
+        <p class="metric-value">N/A</p>
+        <p class="text-xs text-slate-400 mt-2">No rated loss found.</p>
+        {% endif %}
+    </article>
+</section>
+
+<section class="card mt-4">
+    <h3 class="text-lg font-semibold">Winrate by Rating Bracket</h3>
+    <canvas id="opponentBracketChart" height="120" class="mt-4"></canvas>
+</section>
+
+<section class="card mt-4">
+    <h3 class="text-lg font-semibold">Bracket Breakdown</h3>
+    <div class="mt-3 text-sm space-y-2">
+        <div class="row font-semibold"><span>Rating range</span><span>Games | Wins | Winrate</span></div>
+        {% for bracket in opponent_stats.brackets %}
+        <div class="row">
+            <span>{{ bracket.label }}</span>
+            <span>{{ bracket.games }} | {{ bracket.wins }} | {{ bracket.winrate }}%</span>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const opponentStats = {{ opponent_stats|tojson }};
+    const bracketData = opponentStats.brackets || [];
+
+    new Chart(document.getElementById("opponentBracketChart"), {
+        type: "bar",
+        data: {
+            labels: bracketData.map(item => item.label),
+            datasets: [{
+                label: "Winrate %",
+                data: bracketData.map(item => item.winrate),
+                borderRadius: 6,
+                backgroundColor: "rgba(58,154,217,0.78)"
+            }]
+        },
+        options: {
+            indexAxis: "y",
+            plugins: {legend: {display: false}},
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {color: "#9ca3af"}
+                },
+                y: {
+                    ticks: {color: "#9ca3af"}
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
