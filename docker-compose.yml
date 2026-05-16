@@ -1,33 +1,15 @@
-version: "3.9"
-
 services:
   web:
     build: .
-    command: flask run --host=0.0.0.0 --port=5000
+    container_name: chess-web
+    command: gunicorn --bind 0.0.0.0:5000 --workers 2 run:app
+    restart: unless-stopped
     ports:
       - "5000:5000"
     env_file:
       - .env
     environment:
-      - FLASK_APP=run.py
-      - FLASK_ENV=development
       - DATABASE_URL=${DATABASE_URL:-sqlite:///chess_behavioral.db}
+      - FLASK_ENV=${FLASK_ENV:-development}
     volumes:
-      - .:/app
-    depends_on:
-      - db
-
-  db:
-    image: postgres:16
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: chess_behavioral
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-volumes:
-  pgdata:
+      - ./instance:/app/instance
