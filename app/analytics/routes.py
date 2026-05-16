@@ -4,6 +4,7 @@ from flask import current_app, flash, render_template
 from flask_login import current_user, login_required
 from sqlalchemy import case
 
+from app.analytics.color_analysis import analyze_by_color
 from app.analytics.rating_history import parse_rating_history
 from app.analytics import analytics_bp
 from app.analytics.reports import latest_or_create_report
@@ -11,8 +12,8 @@ from app.lichess.client import LichessClient
 from app.models import Game
 
 
-def _build_report_payload() -> dict:
-    games = (
+def _get_user_games() -> list[Game]:
+    return (
         Game.query.filter_by(user_id=current_user.id)
         .order_by(
             case((Game.played_at.is_(None), 1), else_=0),
@@ -21,6 +22,10 @@ def _build_report_payload() -> dict:
         )
         .all()
     )
+
+
+def _build_report_payload() -> dict:
+    games = _get_user_games()
     report = latest_or_create_report(current_user, games)
     return report.payload
 
@@ -62,3 +67,11 @@ def rating_history():
         flash(f"Could not load rating history: {exc}", "warning")
 
     return render_template("analytics/rating_history.html", history=history)
+
+
+@analytics_bp.route("/colors")
+@login_required
+def color_analysis():
+    games = _get_user_games()
+    color_stats = analyze_by_color(games)
+    return render_template("analytics/colors.html", color_stats=color_stats)

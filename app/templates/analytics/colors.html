@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Color Analysis{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<h2 class="text-2xl font-semibold">Color Analysis</h2>
+<p class="text-slate-400 text-sm mt-1">Performance split between White and Black games.</p>
+
+<section class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-6">
+    <article class="card">
+        <h3 class="text-lg font-semibold">White</h3>
+        <p class="metric-label mt-3">Winrate</p>
+        <p class="metric-value">{{ color_stats.white.winrate }}%</p>
+        <div class="mt-4 text-sm space-y-2">
+            <div class="row"><span>Total</span><span>{{ color_stats.white.total }}</span></div>
+            <div class="row"><span>Wins / Draws / Losses</span><span>{{ color_stats.white.wins }} / {{ color_stats.white.draws }} / {{ color_stats.white.losses }}</span></div>
+            <div class="row"><span>Average moves</span><span>{{ color_stats.white.avg_moves }}</span></div>
+        </div>
+        <div class="mt-4">
+            <p class="metric-label mb-2">Top Openings</p>
+            <div class="space-y-2 text-sm">
+                {% for opening in color_stats.white.openings %}
+                <div class="row"><span>{{ opening.opening }}</span><span>{{ opening.games }} games | {{ opening.winrate }}%</span></div>
+                {% else %}
+                <p class="text-slate-400">No opening data yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </article>
+
+    <article class="card">
+        <h3 class="text-lg font-semibold">Black</h3>
+        <p class="metric-label mt-3">Winrate</p>
+        <p class="metric-value">{{ color_stats.black.winrate }}%</p>
+        <div class="mt-4 text-sm space-y-2">
+            <div class="row"><span>Total</span><span>{{ color_stats.black.total }}</span></div>
+            <div class="row"><span>Wins / Draws / Losses</span><span>{{ color_stats.black.wins }} / {{ color_stats.black.draws }} / {{ color_stats.black.losses }}</span></div>
+            <div class="row"><span>Average moves</span><span>{{ color_stats.black.avg_moves }}</span></div>
+        </div>
+        <div class="mt-4">
+            <p class="metric-label mb-2">Top Openings</p>
+            <div class="space-y-2 text-sm">
+                {% for opening in color_stats.black.openings %}
+                <div class="row"><span>{{ opening.opening }}</span><span>{{ opening.games }} games | {{ opening.winrate }}%</span></div>
+                {% else %}
+                <p class="text-slate-400">No opening data yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </article>
+</section>
+
+<section class="card mt-4">
+    <h3 class="text-lg font-semibold">Outcome Comparison</h3>
+    <canvas id="colorResultsChart" height="120" class="mt-4"></canvas>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const colorStats = {{ color_stats|tojson }};
+
+    new Chart(document.getElementById("colorResultsChart"), {
+        type: "bar",
+        data: {
+            labels: ["Wins", "Draws", "Losses"],
+            datasets: [
+                {
+                    label: "White",
+                    data: [colorStats.white.wins, colorStats.white.draws, colorStats.white.losses],
+                    backgroundColor: "rgba(58,154,217,0.75)",
+                    borderRadius: 6
+                },
+                {
+                    label: "Black",
+                    data: [colorStats.black.wins, colorStats.black.draws, colorStats.black.losses],
+                    backgroundColor: "rgba(25,195,125,0.75)",
+                    borderRadius: 6
+                }
+            ]
+        },
+        options: {
+            scales: {
+                x: {
+                    ticks: {color: "#9ca3af"}
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {color: "#9ca3af"}
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {color: "#cbd5e1"}
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
