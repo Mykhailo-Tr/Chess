@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from flask import current_app, flash, render_template, request
+from flask import current_app, flash, make_response, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import case
 
@@ -10,6 +10,7 @@ from app.analytics.color_analysis import analyze_by_color
 from app.analytics.eco_heatmap import build_eco_heatmap
 from app.analytics.opponent_analysis import analyze_opponent_strength
 from app.analytics.perf_stats import parse_perf_stats
+from app.analytics.pdf_export import render_report_pdf
 from app.analytics.puzzle_stats import parse_puzzle_dashboard
 from app.analytics.rating_history import parse_rating_history
 from app.analytics.session_stats import build_calendar_heatmap, build_session_stats
@@ -62,6 +63,23 @@ def analytics_home():
     active_speed = _normalize_speed(request.args.get("speed"))
     payload = _build_report_payload(speed=active_speed)
     return render_template("analytics/index.html", payload=payload, active_speed=active_speed)
+
+
+@analytics_bp.route("/export-pdf")
+@login_required
+def export_pdf():
+    try:
+        payload = _build_report_payload()
+        pdf_bytes = render_report_pdf(current_user, payload)
+        response = make_response(pdf_bytes)
+        response.mimetype = "application/pdf"
+        response.headers["Content-Disposition"] = (
+            f'attachment; filename="chess_report_{current_user.username}.pdf"'
+        )
+        return response
+    except Exception as exc:  # noqa: BLE001 - user-facing fallback route
+        flash(f"PDF export failed: {exc}", "danger")
+        return redirect(url_for("analytics.analytics_home"))
 
 
 @analytics_bp.route("/openings")

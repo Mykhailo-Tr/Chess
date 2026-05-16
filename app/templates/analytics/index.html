@@ -2,8 +2,13 @@
 {% block title %}Analytics{% endblock %}
 {% block content %}
 {% include "partials/speed_tabs.html" %}
-<h2 class="text-2xl font-semibold">Behavioral Analytics</h2>
-<p class="text-slate-400 text-sm mt-1">Pattern-level insights from your recent games.</p>
+<div class="flex flex-wrap items-start justify-between gap-3">
+    <div>
+        <h2 class="text-2xl font-semibold">Behavioral Analytics</h2>
+        <p class="text-slate-400 text-sm mt-1">Pattern-level insights from your recent games.</p>
+    </div>
+    <a class="btn-secondary" href="{{ url_for('analytics.export_pdf') }}">Export PDF</a>
+</div>
 
 <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
     <div class="card">
