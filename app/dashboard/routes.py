@@ -1,12 +1,23 @@
 from __future__ import annotations
 
-from flask import redirect, render_template, url_for
+from flask import redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import case
 
-from app.analytics.reports import latest_or_create_report
+from app.analytics.reports import build_behavior_report, latest_or_create_report
 from app.dashboard import dashboard_bp
 from app.models import Game
+
+VALID_SPEEDS = {"bullet", "blitz", "rapid", "classical"}
+
+
+def _normalize_speed(value: str | None) -> str | None:
+    if not value:
+        return None
+    normalized = value.strip().lower()
+    if normalized in VALID_SPEEDS:
+        return normalized
+    return None
 
 
 @dashboard_bp.route("/")
@@ -19,6 +30,8 @@ def home():
 @dashboard_bp.route("/dashboard")
 @login_required
 def dashboard_home():
+    active_speed = _normalize_speed(request.args.get("speed"))
+
     games = (
         Game.query.filter_by(user_id=current_user.id)
         .order_by(
@@ -28,8 +41,14 @@ def dashboard_home():
         )
         .all()
     )
-    report = latest_or_create_report(current_user, games)
-    payload = report.payload
+    if active_speed:
+        games = [game for game in games if (game.speed or "").lower() == active_speed]
+
+    if active_speed:
+        payload = build_behavior_report(games)
+    else:
+        report = latest_or_create_report(current_user, games)
+        payload = report.payload
     ratings = current_user.ratings_snapshot or {}
 
     openings_chart = payload["openings"]["favorite"]
@@ -45,4 +64,5 @@ def dashboard_home():
         ratings=ratings,
         openings_chart=openings_chart,
         results_chart=results_chart,
+        active_speed=active_speed,
     )
