@@ -83,7 +83,7 @@ Copy `.env.example` to `.env` and fill values:
 | Variable | Required | Description |
 |---|---|---|
 | `SECRET_KEY` | Yes | Flask session signing key. Use a strong random value in production. |
-| `LICHESS_CLIENT_ID` | Yes | Self-chosen unique app string (no registration needed), e.g. `my-chess-app`. |
+| `LICHESS_PERSONAL_TOKEN` | Yes | Personal access token from lichess.org/account/oauth/token |
 | `LICHESS_OAUTH_AUTHORIZE_URL` | No | OAuth authorize endpoint. Default: `https://lichess.org/oauth`. |
 | `LICHESS_OAUTH_TOKEN_URL` | No | OAuth token endpoint. Default: `https://lichess.org/api/token`. |
 | `LICHESS_API_BASE` | No | Lichess API base URL. Default: `https://lichess.org/api`. |
@@ -105,7 +105,7 @@ Copy `.env.example` to `.env` and fill values:
    ```bash
    cp .env.example .env
    ```
-4. Set your `LICHESS_CLIENT_ID` in `.env` (self-chosen value, no client secret).
+4. Set your `LICHESS_PERSONAL_TOKEN` in `.env`.
 5. Run app:
    ```bash
    python run.py
@@ -126,13 +126,14 @@ Notes:
 - `db` starts PostgreSQL at `localhost:5432`.
 - For SQLite-only local usage, set `DATABASE_URL=sqlite:///chess_behavioral.db`.
 
-## Lichess OAuth Flow
+## Authentication
 
-1. User opens login page.
-2. Clicks **Connect Lichess**.
-3. App generates PKCE values (`code_verifier`, `code_challenge`) and redirects to Lichess OAuth consent.
-4. Lichess redirects back to `/auth/callback` with authorization code.
-5. App exchanges code + PKCE verifier for an access token and stores linked user.
+This app uses a Lichess Personal Access Token for single-user access.
+
+1. Go to `https://lichess.org/account/oauth/token`
+2. Create a token with at minimum the `preference:read` scope
+3. Set it as `LICHESS_PERSONAL_TOKEN` in your `.env`
+4. Click "Enter Dashboard" on the login page
 
 ## Behavioral Analytics Included
 

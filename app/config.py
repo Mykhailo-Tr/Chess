@@ -10,6 +10,7 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
 
     LICHESS_CLIENT_ID = os.getenv("LICHESS_CLIENT_ID", "")
+    LICHESS_PERSONAL_TOKEN = os.getenv("LICHESS_PERSONAL_TOKEN", "")
     LICHESS_OAUTH_AUTHORIZE_URL = os.getenv("LICHESS_OAUTH_AUTHORIZE_URL", "https://lichess.org/oauth")
     LICHESS_OAUTH_TOKEN_URL = os.getenv("LICHESS_OAUTH_TOKEN_URL", "https://lichess.org/api/token")
     LICHESS_API_BASE = os.getenv("LICHESS_API_BASE", "https://lichess.org/api")

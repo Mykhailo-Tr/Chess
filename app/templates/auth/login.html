@@ -15,9 +15,11 @@
             <span class="tag">Time Management</span>
             <span class="tag">Weakness Reports</span>
         </div>
-        <a href="{{ url_for('auth.connect_lichess') }}" class="btn-primary mt-10 inline-flex">
-            Connect Lichess
-        </a>
+        <form method="post" action="{{ url_for('auth.token_login') }}">
+            <button type="submit" class="btn-primary mt-10 inline-flex">
+                Enter Dashboard
+            </button>
+        </form>
     </div>
 </section>
 {% endblock %}

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import secrets
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, UTC
 
-from flask import current_app, flash, redirect, render_template, request, session, url_for
+from flask import current_app, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
 from app.auth import auth_bp
 from app.extensions import db
-from app.lichess.client import LichessClient, generate_pkce_pair
+from app.lichess.client import LichessClient
 from app.models import User
 
 
@@ -19,61 +18,24 @@ def login():
     return render_template("auth/login.html")
 
 
-@auth_bp.route("/connect")
-def connect_lichess():
-    client = LichessClient.from_app(current_app)
-    if not current_app.config["LICHESS_CLIENT_ID"]:
-        flash("Lichess OAuth is not configured. Set LICHESS_CLIENT_ID.", "danger")
+@auth_bp.route("/token-login", methods=["POST"])
+def token_login():
+    token = current_app.config.get("LICHESS_PERSONAL_TOKEN", "")
+    if not token:
+        flash("LICHESS_PERSONAL_TOKEN is not set in environment.", "danger")
         return redirect(url_for("auth.login"))
 
-    state = secrets.token_urlsafe(32)
-    code_verifier, code_challenge = generate_pkce_pair()
-    session["oauth_state"] = state
-    session["code_verifier"] = code_verifier
-    redirect_uri = url_for("auth.oauth_callback", _external=True)
-    authorize_url = client.build_authorize_url(
-        redirect_uri=redirect_uri,
-        state=state,
-        code_challenge=code_challenge,
-        scope="preference:read",
-    )
-    return redirect(authorize_url)
-
-
-@auth_bp.route("/callback")
-def oauth_callback():
-    if request.args.get("error"):
-        flash("Authorization denied by Lichess.", "danger")
+    try:
+        client = LichessClient.from_app(current_app)
+        profile = client.get_profile(token)
+    except Exception as exc:
+        flash(f"Could not reach Lichess API: {exc}", "danger")
         return redirect(url_for("auth.login"))
 
-    code = request.args.get("code")
-    state = request.args.get("state")
-    expected_state = session.pop("oauth_state", None)
-    code_verifier = session.pop("code_verifier", None)
-
-    if not code or not state or state != expected_state or not code_verifier:
-        flash("Invalid OAuth callback state.", "danger")
-        return redirect(url_for("auth.login"))
-
-    client = LichessClient.from_app(current_app)
-    redirect_uri = url_for("auth.oauth_callback", _external=True)
-
-    token_data = client.exchange_code_for_token(
-        code=code,
-        redirect_uri=redirect_uri,
-        code_verifier=code_verifier,
-    )
-    access_token = token_data.get("access_token")
-    if not access_token:
-        flash("Could not obtain Lichess token.", "danger")
-        return redirect(url_for("auth.login"))
-
-    profile = client.get_profile(access_token)
     lichess_id = profile.get("id")
     username = profile.get("username")
-
     if not lichess_id or not username:
-        flash("Could not read your Lichess profile.", "danger")
+        flash("Could not read Lichess profile.", "danger")
         return redirect(url_for("auth.login"))
 
     user = User.query.filter_by(lichess_id=lichess_id).first()
@@ -81,18 +43,14 @@ def oauth_callback():
         user = User(lichess_id=lichess_id, username=username)
         db.session.add(user)
 
-    expires_in = token_data.get("expires_in")
-    expires_at = datetime.now(UTC) + timedelta(seconds=int(expires_in)) if expires_in else None
-
     user.username = username
-    user.access_token = access_token
-    user.token_expires_at = expires_at
+    user.access_token = token
     user.ratings_snapshot = _extract_ratings(profile)
     user.last_synced_at = datetime.now(UTC)
-
     db.session.commit()
+
     login_user(user)
-    flash("Lichess account connected.", "success")
+    flash(f"Logged in as {username}.", "success")
     return redirect(url_for("dashboard.dashboard_home"))
 
 
