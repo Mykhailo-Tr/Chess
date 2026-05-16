@@ -43,6 +43,17 @@
                 <a class="nav-link" href="{{ url_for('analytics.eco_map') }}">ECO Map</a>
                 <a class="nav-link" href="{{ url_for('analytics.compare_player') }}">Compare Player</a>
             </nav>
+            {% if live_game and live_game.gameId %}
+            <a
+                class="mt-4 inline-flex items-center gap-2 text-sm text-emerald-200 hover:text-emerald-100"
+                href="https://lichess.org/{{ live_game.gameId }}"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <div class="animate-pulse bg-green-500 rounded-full w-2 h-2 inline-block"></div>
+                <span>🟢 Game in progress</span>
+            </a>
+            {% endif %}
             <form class="mt-8" method="post" action="{{ url_for('auth.logout') }}">
                 <button class="btn-secondary w-full" type="submit">Logout</button>
             </form>

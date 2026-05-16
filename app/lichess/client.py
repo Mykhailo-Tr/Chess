@@ -121,3 +121,26 @@ class LichessClient:
         )
         response.raise_for_status()
         return response.json()
+
+    def get_playing(self, access_token: str) -> dict[str, Any] | None:
+        try:
+            response = requests.get(
+                f"{self.api_base}/account/playing",
+                headers={
+                    "Accept": "application/json",
+                    "Authorization": f"Bearer {access_token}",
+                },
+                timeout=20,
+            )
+            response.raise_for_status()
+            payload = response.json()
+            if not isinstance(payload, dict):
+                return None
+            now_playing = payload.get("nowPlaying")
+            if isinstance(now_playing, list) and now_playing:
+                first_game = now_playing[0]
+                if isinstance(first_game, dict):
+                    return first_game
+            return None
+        except Exception:  # noqa: BLE001 - non-critical sidebar status
+            return None
