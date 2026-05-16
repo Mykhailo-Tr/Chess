@@ -2,37 +2,37 @@
 {% block title %}Openings{% endblock %}
 {% block content %}
 {% include "partials/speed_tabs.html" %}
-<h2 class="text-2xl font-semibold">Opening Performance</h2>
-<p class="text-slate-400 text-sm mt-1">Most played lines and outcome trends.</p>
+<h2 class="page-title">Opening Performance</h2>
+<p class="page-subtitle">Most played lines and outcome trends.</p>
 
 <section class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
     <div class="card">
-        <h3 class="font-semibold mb-2">Favorite Openings</h3>
-        <div class="space-y-2 text-sm">
+        <h3 class="card-header">Favorite Openings</h3>
+        <div>
             {% for item in payload.openings.favorite %}
-            <div class="row"><span>{{ item.opening }}</span><span>{{ item.games }} games</span></div>
+            <div class="row"><span class="row-label">{{ item.opening }}</span><span class="row-value">{{ item.games }} games</span></div>
             {% else %}
-            <p class="text-slate-400">No opening data yet.</p>
+            <p class="text-white/50">No opening data yet.</p>
             {% endfor %}
         </div>
     </div>
     <div class="card">
-        <h3 class="font-semibold mb-2">Best Winrate</h3>
-        <div class="space-y-2 text-sm">
+        <h3 class="card-header">Best Winrate</h3>
+        <div>
             {% for item in payload.openings.best %}
-            <div class="row"><span>{{ item.opening }}</span><span>{{ item.winrate }}%</span></div>
+            <div class="row"><span class="row-label">{{ item.opening }}</span><span class="row-value">{{ item.winrate }}%</span></div>
             {% else %}
-            <p class="text-slate-400">Not enough games yet.</p>
+            <p class="text-white/50">Not enough games yet.</p>
             {% endfor %}
         </div>
     </div>
     <div class="card">
-        <h3 class="font-semibold mb-2">Worst Winrate</h3>
-        <div class="space-y-2 text-sm">
+        <h3 class="card-header">Worst Winrate</h3>
+        <div>
             {% for item in payload.openings.worst %}
-            <div class="row"><span>{{ item.opening }}</span><span>{{ item.winrate }}%</span></div>
+            <div class="row"><span class="row-label">{{ item.opening }}</span><span class="row-value">{{ item.winrate }}%</span></div>
             {% else %}
-            <p class="text-slate-400">Not enough games yet.</p>
+            <p class="text-white/50">Not enough games yet.</p>
             {% endfor %}
         </div>
     </div>

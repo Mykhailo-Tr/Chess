@@ -19,21 +19,21 @@
 </style>
 {% endblock %}
 {% block content %}
-<h2 class="text-2xl font-semibold">Play Calendar</h2>
-<p class="text-slate-400 text-sm mt-1">Game activity and winrate timing patterns over the last year.</p>
+<h2 class="page-title">Play Calendar</h2>
+<p class="page-subtitle">Game activity and winrate timing patterns over the last year.</p>
 
 <section class="card mt-6">
-    <h3 class="text-lg font-semibold">Activity Heatmap</h3>
+    <h3 class="card-header">Activity Heatmap</h3>
     <div class="mt-4">
         <div id="heatmapGrid" class="heatmap-grid"></div>
     </div>
-    <div class="mt-3 flex items-center gap-2 text-xs text-slate-400">
+    <div class="mt-3 flex items-center gap-2 text-xs text-white/45">
         <span>Less</span>
         <span class="heatmap-cell" style="width: 12px; background:#0e1117"></span>
         <span class="heatmap-cell" style="width: 12px; background:#163328"></span>
         <span class="heatmap-cell" style="width: 12px; background:#1f5f46"></span>
         <span class="heatmap-cell" style="width: 12px; background:#178c63"></span>
-        <span class="heatmap-cell" style="width: 12px; background:#19c37d"></span>
+        <span class="heatmap-cell" style="width: 12px; background:#00d97e"></span>
         <span>More</span>
     </div>
 </section>
@@ -43,57 +43,61 @@
         <p class="metric-label">Best Hour</p>
         {% if session_stats.best_hour %}
         <p class="metric-value">{{ "%02d"|format(session_stats.best_hour.hour) }}:00</p>
-        <p class="text-xs text-slate-400 mt-2">{{ session_stats.best_hour.winrate }}% over {{ session_stats.best_hour.count }} games</p>
+        <p class="metric-delta">{{ session_stats.best_hour.winrate }}% over {{ session_stats.best_hour.count }} games</p>
         {% else %}
         <p class="metric-value">N/A</p>
-        <p class="text-xs text-slate-400 mt-2">Need at least 2 games in an hour bucket.</p>
+        <p class="metric-delta">Need at least 2 games in an hour bucket.</p>
         {% endif %}
     </article>
     <article class="card">
         <p class="metric-label">Worst Hour</p>
         {% if session_stats.worst_hour %}
         <p class="metric-value">{{ "%02d"|format(session_stats.worst_hour.hour) }}:00</p>
-        <p class="text-xs text-slate-400 mt-2">{{ session_stats.worst_hour.winrate }}% over {{ session_stats.worst_hour.count }} games</p>
+        <p class="metric-delta">{{ session_stats.worst_hour.winrate }}% over {{ session_stats.worst_hour.count }} games</p>
         {% else %}
         <p class="metric-value">N/A</p>
-        <p class="text-xs text-slate-400 mt-2">Need at least 2 games in an hour bucket.</p>
+        <p class="metric-delta">Need at least 2 games in an hour bucket.</p>
         {% endif %}
     </article>
     <article class="card">
         <p class="metric-label">Best Weekday</p>
         {% if session_stats.best_weekday %}
-        <p class="metric-value">{{ session_stats.best_weekday.weekday }}</p>
-        <p class="text-xs text-slate-400 mt-2">{{ session_stats.best_weekday.winrate }}% over {{ session_stats.best_weekday.count }} games</p>
+        <p class="metric-value sm">{{ session_stats.best_weekday.weekday }}</p>
+        <p class="metric-delta">{{ session_stats.best_weekday.winrate }}% over {{ session_stats.best_weekday.count }} games</p>
         {% else %}
         <p class="metric-value">N/A</p>
-        <p class="text-xs text-slate-400 mt-2">Need at least 2 games in a weekday bucket.</p>
+        <p class="metric-delta">Need at least 2 games in a weekday bucket.</p>
         {% endif %}
     </article>
     <article class="card">
         <p class="metric-label">Worst Weekday</p>
         {% if session_stats.worst_weekday %}
-        <p class="metric-value">{{ session_stats.worst_weekday.weekday }}</p>
-        <p class="text-xs text-slate-400 mt-2">{{ session_stats.worst_weekday.winrate }}% over {{ session_stats.worst_weekday.count }} games</p>
+        <p class="metric-value sm">{{ session_stats.worst_weekday.weekday }}</p>
+        <p class="metric-delta">{{ session_stats.worst_weekday.winrate }}% over {{ session_stats.worst_weekday.count }} games</p>
         {% else %}
         <p class="metric-value">N/A</p>
-        <p class="text-xs text-slate-400 mt-2">Need at least 2 games in a weekday bucket.</p>
+        <p class="metric-delta">Need at least 2 games in a weekday bucket.</p>
         {% endif %}
     </article>
 </section>
 
 <section class="card mt-4">
-    <h3 class="text-lg font-semibold">Winrate by Hour</h3>
+    <h3 class="card-header">Winrate by Hour</h3>
     <canvas id="hourWinrateChart" height="110" class="mt-4"></canvas>
 </section>
 
 <section class="card mt-4">
-    <h3 class="text-lg font-semibold">Winrate by Weekday</h3>
+    <h3 class="card-header">Winrate by Weekday</h3>
     <canvas id="weekdayWinrateChart" height="110" class="mt-4"></canvas>
 </section>
 {% endblock %}
 
 {% block scripts %}
 <script>
+    Chart.defaults.color = '#5c6370';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
     const calendarPayload = {{ calendar|tojson }};
     const sessionStats = {{ session_stats|tojson }};
 
@@ -101,7 +105,7 @@
     const heatmap = calendarPayload.heatmap || {};
     const maxCount = calendarPayload.max_count || 0;
     const dates = Object.keys(heatmap).sort().slice(-364);
-    const shades = ["#0e1117", "#163328", "#1f5f46", "#178c63", "#19c37d"];
+    const shades = ["#0e1117", "#163328", "#1f5f46", "#178c63", "#00d97e"];
 
     function colorForCount(count) {
         if (count <= 0 || maxCount <= 0) {
@@ -129,17 +133,29 @@
                 label: "Winrate %",
                 data: hourData.map(item => item.winrate),
                 borderRadius: 6,
-                backgroundColor: "rgba(58,154,217,0.78)"
+                backgroundColor: "rgba(59,130,246,0.7)"
             }]
         },
         options: {
-            plugins: {legend: {display: false}},
+            plugins: {
+                legend: {
+                    display: false,
+                    labels: {
+                        color: "#9198a1",
+                        font: {family: "'DM Mono', monospace", size: 11}
+                    }
+                }
+            },
             scales: {
-                x: {ticks: {color: "#9ca3af"}},
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#5c6370', font: { size: 11 } }
+                },
                 y: {
                     beginAtZero: true,
                     max: 100,
-                    ticks: {color: "#9ca3af"}
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#5c6370', font: { size: 11 } }
                 }
             }
         }
@@ -154,17 +170,29 @@
                 label: "Winrate %",
                 data: weekdayData.map(item => item.winrate),
                 borderRadius: 6,
-                backgroundColor: "rgba(25,195,125,0.78)"
+                backgroundColor: "rgba(0,217,126,0.7)"
             }]
         },
         options: {
-            plugins: {legend: {display: false}},
+            plugins: {
+                legend: {
+                    display: false,
+                    labels: {
+                        color: "#9198a1",
+                        font: {family: "'DM Mono', monospace", size: 11}
+                    }
+                }
+            },
             scales: {
-                x: {ticks: {color: "#9ca3af"}},
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#5c6370', font: { size: 11 } }
+                },
                 y: {
                     beginAtZero: true,
                     max: 100,
-                    ticks: {color: "#9ca3af"}
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#5c6370', font: { size: 11 } }
                 }
             }
         }

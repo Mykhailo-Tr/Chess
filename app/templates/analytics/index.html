@@ -4,17 +4,17 @@
 {% include "partials/speed_tabs.html" %}
 <div class="flex flex-wrap items-start justify-between gap-3">
     <div>
-        <h2 class="text-2xl font-semibold">Behavioral Analytics</h2>
-        <p class="text-slate-400 text-sm mt-1">Pattern-level insights from your recent games.</p>
+        <h2 class="page-title">Behavioral Analytics</h2>
+        <p class="page-subtitle">Pattern-level insights from your recent games.</p>
     </div>
-    <a class="btn-secondary" href="{{ url_for('analytics.export_pdf') }}">Export PDF</a>
+    <a class="btn-secondary" href="{{ url_for('analytics.export_pdf') }}">v Export PDF</a>
 </div>
 
 <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
     <div class="card">
         <p class="metric-label">Tilt Level</p>
         <p class="metric-value">{{ payload.tilt.level }}</p>
-        <p class="text-xs text-slate-400 mt-2">Score: {{ payload.tilt.score }}</p>
+        <p class="metric-delta">Score: {{ payload.tilt.score }}</p>
     </div>
     <div class="card">
         <p class="metric-label">Average Move Time</p>
@@ -27,12 +27,12 @@
 </section>
 
 <section class="card mt-4">
-    <h3 class="text-lg font-semibold">Tilt Signals</h3>
-    <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-        <div class="row"><span>Losing streak</span><span>{{ payload.tilt.signals.losing_streak }}</span></div>
-        <div class="row"><span>Rapid requeue after losses</span><span>{{ payload.tilt.signals.rapid_requeue_after_loss }}</span></div>
-        <div class="row"><span>Recent loss ratio</span><span>{{ payload.tilt.signals.recent_loss_ratio }}%</span></div>
-        <div class="row"><span>Accuracy drop placeholder</span><span>{{ payload.tilt.signals.accuracy_drop_placeholder }}%</span></div>
+    <h3 class="card-header">Tilt Signals</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+        <div class="row"><span class="row-label">Losing streak</span><span class="row-value">{{ payload.tilt.signals.losing_streak }}</span></div>
+        <div class="row"><span class="row-label">Rapid requeue after losses</span><span class="row-value">{{ payload.tilt.signals.rapid_requeue_after_loss }}</span></div>
+        <div class="row"><span class="row-label">Recent loss ratio</span><span class="row-value">{{ payload.tilt.signals.recent_loss_ratio }}%</span></div>
+        <div class="row"><span class="row-label">Accuracy drop placeholder</span><span class="row-value">{{ payload.tilt.signals.accuracy_drop_placeholder }}%</span></div>
     </div>
 </section>
 {% endblock %}

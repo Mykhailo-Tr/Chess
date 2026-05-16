@@ -2,11 +2,11 @@
 {% if messages %}
 <div class="space-y-2 mb-4">
     {% for category, message in messages %}
-    <div class="rounded-lg px-4 py-3 text-sm
-        {% if category == 'success' %}bg-emerald-900/60 text-emerald-200{% endif %}
-        {% if category == 'danger' %}bg-rose-900/60 text-rose-200{% endif %}
-        {% if category == 'warning' %}bg-amber-900/60 text-amber-200{% endif %}
-        {% if category == 'info' %}bg-sky-900/60 text-sky-200{% endif %}">
+    <div class="rounded-md px-4 py-3 text-sm border-l-2
+        {% if category == 'success' %}border-accent bg-accent/5 text-accent{% endif %}
+        {% if category == 'danger' %}border-red-400 bg-red-400/5 text-red-300{% endif %}
+        {% if category == 'warning' %}border-amber-400 bg-amber-400/5 text-amber-300{% endif %}
+        {% if category == 'info' %}border-blue-400 bg-blue-400/5 text-blue-300{% endif %}">
         {{ message }}
     </div>
     {% endfor %}

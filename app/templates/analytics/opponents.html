@@ -4,45 +4,45 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 {% endblock %}
 {% block content %}
-<h2 class="text-2xl font-semibold">Opponent Strength</h2>
-<p class="text-slate-400 text-sm mt-1">Winrate profile across rating brackets.</p>
+<h2 class="page-title">Opponent Strength</h2>
+<p class="page-subtitle">Winrate profile across rating brackets.</p>
 
 <section class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
     <article class="card">
         <p class="metric-label">Best Win</p>
         {% if opponent_stats.best_win %}
-        <p class="metric-value">{{ opponent_stats.best_win.opponent }}</p>
-        <p class="text-xs text-slate-400 mt-2">Rating: {{ opponent_stats.best_win.rating }}</p>
+        <p class="metric-value sm">{{ opponent_stats.best_win.opponent }}</p>
+        <p class="metric-delta">Rating: {{ opponent_stats.best_win.rating }}</p>
         {% else %}
         <p class="metric-value">N/A</p>
-        <p class="text-xs text-slate-400 mt-2">No rated win found.</p>
+        <p class="metric-delta">No rated win found.</p>
         {% endif %}
     </article>
     <article class="card">
         <p class="metric-label">Toughest Loss</p>
         {% if opponent_stats.toughest_loss %}
-        <p class="metric-value">{{ opponent_stats.toughest_loss.opponent }}</p>
-        <p class="text-xs text-slate-400 mt-2">Rating: {{ opponent_stats.toughest_loss.rating }}</p>
+        <p class="metric-value sm">{{ opponent_stats.toughest_loss.opponent }}</p>
+        <p class="metric-delta">Rating: {{ opponent_stats.toughest_loss.rating }}</p>
         {% else %}
         <p class="metric-value">N/A</p>
-        <p class="text-xs text-slate-400 mt-2">No rated loss found.</p>
+        <p class="metric-delta">No rated loss found.</p>
         {% endif %}
     </article>
 </section>
 
 <section class="card mt-4">
-    <h3 class="text-lg font-semibold">Winrate by Rating Bracket</h3>
+    <h3 class="card-header">Winrate by Rating Bracket</h3>
     <canvas id="opponentBracketChart" height="120" class="mt-4"></canvas>
 </section>
 
 <section class="card mt-4">
-    <h3 class="text-lg font-semibold">Bracket Breakdown</h3>
-    <div class="mt-3 text-sm space-y-2">
-        <div class="row font-semibold"><span>Rating range</span><span>Games | Wins | Winrate</span></div>
+    <h3 class="card-header">Bracket Breakdown</h3>
+    <div>
+        <div class="row"><span class="row-label">Rating range</span><span class="row-value">Games | Wins | Winrate</span></div>
         {% for bracket in opponent_stats.brackets %}
         <div class="row">
-            <span>{{ bracket.label }}</span>
-            <span>{{ bracket.games }} | {{ bracket.wins }} | {{ bracket.winrate }}%</span>
+            <span class="row-label">{{ bracket.label }}</span>
+            <span class="row-value">{{ bracket.games }} | {{ bracket.wins }} | {{ bracket.winrate }}%</span>
         </div>
         {% endfor %}
     </div>
@@ -51,6 +51,10 @@
 
 {% block scripts %}
 <script>
+    Chart.defaults.color = '#5c6370';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
     const opponentStats = {{ opponent_stats|tojson }};
     const bracketData = opponentStats.brackets || [];
 
@@ -62,20 +66,30 @@
                 label: "Winrate %",
                 data: bracketData.map(item => item.winrate),
                 borderRadius: 6,
-                backgroundColor: "rgba(58,154,217,0.78)"
+                backgroundColor: "rgba(59,130,246,0.78)"
             }]
         },
         options: {
             indexAxis: "y",
-            plugins: {legend: {display: false}},
+            plugins: {
+                legend: {
+                    display: false,
+                    labels: {
+                        color: "#9198a1",
+                        font: {family: "'DM Mono', monospace", size: 11}
+                    }
+                }
+            },
             scales: {
                 x: {
                     beginAtZero: true,
                     max: 100,
-                    ticks: {color: "#9ca3af"}
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#5c6370', font: { size: 11 } }
                 },
                 y: {
-                    ticks: {color: "#9ca3af"}
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#5c6370', font: { size: 11 } }
                 }
             }
         }

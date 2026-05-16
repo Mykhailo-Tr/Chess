@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Compare Player{% endblock %}
 {% block content %}
-<h2 class="text-2xl font-semibold">Profile Comparison</h2>
-<p class="text-slate-400 text-sm mt-1">Compare your profile and head-to-head with another Lichess player.</p>
+<h2 class="page-title">Profile Comparison</h2>
+<p class="page-subtitle">Compare your profile and head-to-head with another Lichess player.</p>
 
 <section class="card mt-6">
     <form method="get" action="{{ url_for('analytics.compare_player') }}" class="flex flex-wrap items-end gap-3">
         <div>
             <label class="metric-label" for="opponent">Opponent Username</label>
-            <input id="opponent" name="opponent" class="input mt-2" style="width: 14rem;" value="{{ comparison.opponent_query if comparison else '' }}" placeholder="e.g. hikaru">
+            <input id="opponent" name="opponent" class="input mt-2" style="width: auto; min-width: 14rem;" value="{{ comparison.opponent_query if comparison else '' }}" placeholder="e.g. hikaru">
         </div>
         <button class="btn-primary" type="submit">Compare</button>
     </form>
@@ -16,33 +16,33 @@
 
 {% if comparison %}
 <section class="card mt-4">
-    <h3 class="text-lg font-semibold">Player Snapshot</h3>
-    <div class="mt-3 text-sm space-y-2">
-        <div class="row font-semibold"><span>Metric</span><span>{{ comparison.me.username }} | {{ comparison.opponent.username }}</span></div>
-        <div class="row"><span>Bullet Rating</span><span>{{ comparison.me.ratings.bullet }} | {{ comparison.opponent.ratings.bullet }}</span></div>
-        <div class="row"><span>Blitz Rating</span><span>{{ comparison.me.ratings.blitz }} | {{ comparison.opponent.ratings.blitz }}</span></div>
-        <div class="row"><span>Rapid Rating</span><span>{{ comparison.me.ratings.rapid }} | {{ comparison.opponent.ratings.rapid }}</span></div>
-        <div class="row"><span>Total Lichess Games</span><span>{{ comparison.me.games_all }} | {{ comparison.opponent.games_all }}</span></div>
-        <div class="row"><span>Join Date</span><span>{{ comparison.me.join_date }} | {{ comparison.opponent.join_date }}</span></div>
+    <h3 class="card-header">Player Snapshot</h3>
+    <div>
+        <div class="row"><span class="row-label">Metric</span><span class="row-value">{{ comparison.me.username }} | {{ comparison.opponent.username }}</span></div>
+        <div class="row"><span class="row-label">Bullet Rating</span><span class="row-value">{{ comparison.me.ratings.bullet }} | {{ comparison.opponent.ratings.bullet }}</span></div>
+        <div class="row"><span class="row-label">Blitz Rating</span><span class="row-value">{{ comparison.me.ratings.blitz }} | {{ comparison.opponent.ratings.blitz }}</span></div>
+        <div class="row"><span class="row-label">Rapid Rating</span><span class="row-value">{{ comparison.me.ratings.rapid }} | {{ comparison.opponent.ratings.rapid }}</span></div>
+        <div class="row"><span class="row-label">Total Lichess Games</span><span class="row-value">{{ comparison.me.games_all }} | {{ comparison.opponent.games_all }}</span></div>
+        <div class="row"><span class="row-label">Join Date</span><span class="row-value">{{ comparison.me.join_date }} | {{ comparison.opponent.join_date }}</span></div>
     </div>
 </section>
 
 <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
     <article class="card">
-        <h3 class="text-lg font-semibold">Head-to-Head (Lichess Crosstable)</h3>
-        <div class="mt-3 text-sm space-y-2">
-            <div class="row"><span>Score</span><span>{{ comparison.crosstable_summary.score_user1 }} - {{ comparison.crosstable_summary.score_user2 }}</span></div>
-            <div class="row"><span>Games</span><span>{{ comparison.crosstable_summary.total_games }}</span></div>
+        <h3 class="card-header">Head-to-Head (Lichess Crosstable)</h3>
+        <div>
+            <div class="row"><span class="row-label">Score</span><span class="row-value">{{ comparison.crosstable_summary.score_user1 }} - {{ comparison.crosstable_summary.score_user2 }}</span></div>
+            <div class="row"><span class="row-label">Games</span><span class="row-value">{{ comparison.crosstable_summary.total_games }}</span></div>
         </div>
     </article>
     <article class="card">
-        <h3 class="text-lg font-semibold">Local Game History</h3>
-        <div class="mt-3 text-sm space-y-2">
-            <div class="row"><span>Wins</span><span>{{ comparison.local.wins }}</span></div>
-            <div class="row"><span>Draws</span><span>{{ comparison.local.draws }}</span></div>
-            <div class="row"><span>Losses</span><span>{{ comparison.local.losses }}</span></div>
-            <div class="row"><span>Total</span><span>{{ comparison.local.total }}</span></div>
-            <div class="row"><span>Winrate</span><span>{{ comparison.local.winrate }}%</span></div>
+        <h3 class="card-header">Local Game History</h3>
+        <div>
+            <div class="row"><span class="row-label">Wins</span><span class="row-value">{{ comparison.local.wins }}</span></div>
+            <div class="row"><span class="row-label">Draws</span><span class="row-value">{{ comparison.local.draws }}</span></div>
+            <div class="row"><span class="row-label">Losses</span><span class="row-value">{{ comparison.local.losses }}</span></div>
+            <div class="row"><span class="row-label">Total</span><span class="row-value">{{ comparison.local.total }}</span></div>
+            <div class="row"><span class="row-label">Winrate</span><span class="row-value">{{ comparison.local.winrate }}%</span></div>
         </div>
     </article>
 </section>

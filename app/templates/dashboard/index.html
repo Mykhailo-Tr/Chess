@@ -5,12 +5,12 @@
 {% endblock %}
 {% block content %}
 {% if tilt_guard %}
-<div class="mb-4 rounded-lg border border-rose-500/50 bg-rose-900/50 text-rose-100 px-4 py-3">
+<div class="mb-4 rounded-md border-l-[3px] border-l-[#f87171] border border-red-400/20 bg-[rgba(248,113,113,0.05)] px-4 py-3">
     <div class="flex items-start justify-between gap-3">
-        <p class="text-sm"><span class="font-semibold">♞ Tilt Guard:</span> {{ tilt_guard }}</p>
+        <p class="text-sm text-red-200"><span class="font-semibold">Tilt Guard:</span> {{ tilt_guard }}</p>
         <a
             href="{{ url_for('dashboard.dashboard_home', speed=active_speed, dismiss_tilt_guard=1) if active_speed else url_for('dashboard.dashboard_home', dismiss_tilt_guard=1) }}"
-            class="text-xs border border-amber-400/60 bg-amber-900/40 text-amber-100 px-2 py-1 rounded-md whitespace-nowrap hover:bg-amber-800/50"
+            class="btn-ghost whitespace-nowrap"
         >Dismiss</a>
     </div>
 </div>
@@ -18,10 +18,10 @@
 {% include "partials/speed_tabs.html" %}
 <div class="flex flex-wrap items-start justify-between gap-4">
     <div>
-        <h2 class="text-2xl font-semibold">Dashboard</h2>
-        <p class="text-slate-400 text-sm mt-1">Behavior summary for @{{ current_user.username }}</p>
+        <h2 class="page-title">Dashboard</h2>
+        <p class="page-subtitle">Behavior summary for @{{ current_user.username }}</p>
     </div>
-    <form method="post" action="{{ url_for('lichess.import_recent_games') }}" class="flex gap-2 items-center">
+    <form method="post" action="{{ url_for('lichess.import_recent_games') }}" class="flex items-center gap-3">
         <input
             class="input"
             type="number"
@@ -35,53 +35,73 @@
 </div>
 
 <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6">
-    <div class="card"><p class="metric-label">Games Analyzed</p><p class="metric-value">{{ payload.games_analyzed }}</p></div>
-    <div class="card"><p class="metric-label">Winrate</p><p class="metric-value">{{ payload.winrate }}%</p></div>
-    <div class="card"><p class="metric-label">Tilt Score</p><p class="metric-value">{{ payload.tilt.score }} ({{ payload.tilt.level }})</p></div>
-    <div class="card"><p class="metric-label">Time Pressure</p><p class="metric-value">{{ payload.time_management.time_pressure_score }}</p></div>
+    <div class="card">
+        <p class="metric-label">Games Analyzed</p>
+        <p class="metric-value">{{ payload.games_analyzed }}</p>
+        <div style="height:2px;background:linear-gradient(90deg,#00d97e,transparent);margin-top:0.75rem;border-radius:1px;width:60%"></div>
+    </div>
+    <div class="card">
+        <p class="metric-label">Winrate</p>
+        <p class="metric-value">{{ payload.winrate }}%</p>
+        <div style="height:2px;background:linear-gradient(90deg,#00d97e,transparent);margin-top:0.75rem;border-radius:1px;width:60%"></div>
+    </div>
+    <div class="card">
+        <p class="metric-label">Tilt Score</p>
+        <p class="metric-value sm">{{ payload.tilt.score }} ({{ payload.tilt.level }})</p>
+        <div style="height:2px;background:linear-gradient(90deg,#00d97e,transparent);margin-top:0.75rem;border-radius:1px;width:60%"></div>
+    </div>
+    <div class="card">
+        <p class="metric-label">Time Pressure</p>
+        <p class="metric-value">{{ payload.time_management.time_pressure_score }}</p>
+        <div style="height:2px;background:linear-gradient(90deg,#00d97e,transparent);margin-top:0.75rem;border-radius:1px;width:60%"></div>
+    </div>
 </section>
 
 <section class="grid grid-cols-1 xl:grid-cols-3 gap-4 mt-4">
     <div class="card xl:col-span-2">
-        <h3 class="text-lg font-semibold mb-3">Opening Frequency</h3>
+        <h3 class="card-header">Opening Frequency</h3>
         <canvas id="openingsChart" height="120"></canvas>
     </div>
     <div class="card">
-        <h3 class="text-lg font-semibold mb-3">Results</h3>
+        <h3 class="card-header">Results</h3>
         <canvas id="resultsChart" height="120"></canvas>
     </div>
 </section>
 
 <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
     <div class="card">
-        <h3 class="text-lg font-semibold">Current Ratings</h3>
-        <div class="mt-3 space-y-2 text-sm">
+        <h3 class="card-header">Current Ratings</h3>
+        <div>
             {% if ratings %}
                 {% for perf, rating in ratings.items() %}
-                <div class="flex justify-between border-b border-slate-800 pb-1">
-                    <span class="capitalize text-slate-400">{{ perf }}</span>
-                    <span class="font-semibold">{{ rating }}</span>
+                <div class="row">
+                    <span class="row-label capitalize">{{ perf }}</span>
+                    <span class="row-value">{{ rating }}</span>
                 </div>
                 {% endfor %}
             {% else %}
-                <p class="text-slate-400">No rating snapshot yet. Import games to refresh profile metrics.</p>
+                <p class="text-white/50 text-sm">No rating snapshot yet. Import games to refresh profile metrics.</p>
             {% endif %}
         </div>
     </div>
     <div class="card">
-        <h3 class="text-lg font-semibold">Signals</h3>
-        <ul class="mt-3 text-sm space-y-2">
-            <li class="flex justify-between"><span class="text-slate-400">Average Accuracy (placeholder)</span><span>{{ payload.avg_accuracy }}%</span></li>
-            <li class="flex justify-between"><span class="text-slate-400">Fast Move Ratio</span><span>{{ payload.time_management.fast_move_ratio }}%</span></li>
-            <li class="flex justify-between"><span class="text-slate-400">Panic Move Ratio</span><span>{{ payload.time_management.panic_move_ratio }}%</span></li>
-            <li class="flex justify-between"><span class="text-slate-400">Clock Data Source</span><span class="uppercase">{{ payload.time_management.source }}</span></li>
-        </ul>
+        <h3 class="card-header">Signals</h3>
+        <div>
+            <div class="row"><span class="row-label">Average Accuracy (placeholder)</span><span class="row-value">{{ payload.avg_accuracy }}%</span></div>
+            <div class="row"><span class="row-label">Fast Move Ratio</span><span class="row-value">{{ payload.time_management.fast_move_ratio }}%</span></div>
+            <div class="row"><span class="row-label">Panic Move Ratio</span><span class="row-value">{{ payload.time_management.panic_move_ratio }}%</span></div>
+            <div class="row"><span class="row-label">Clock Data Source</span><span class="row-value uppercase">{{ payload.time_management.source }}</span></div>
+        </div>
     </div>
 </section>
 {% endblock %}
 
 {% block scripts %}
 <script>
+    Chart.defaults.color = '#5c6370';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
     const openingsRaw = {{ openings_chart|tojson }};
     const resultsRaw = {{ results_chart|tojson }};
 
@@ -92,15 +112,30 @@
             datasets: [{
                 label: "Games",
                 data: openingsRaw.map(item => item.games),
-                borderRadius: 8,
-                backgroundColor: "rgba(58,154,217,0.7)"
+                borderRadius: 6,
+                backgroundColor: "rgba(0,217,126,0.7)"
             }]
         },
         options: {
-            plugins: {legend: {display: false}},
+            plugins: {
+                legend: {
+                    display: false,
+                    labels: {
+                        color: "#9198a1",
+                        font: {family: "'DM Mono', monospace", size: 11}
+                    }
+                }
+            },
             scales: {
-                x: {ticks: {color: "#9ca3af"}},
-                y: {ticks: {color: "#9ca3af"}, beginAtZero: true}
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#5c6370', font: { size: 11 } }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#5c6370', font: { size: 11 } }
+                }
             }
         }
     });
@@ -111,8 +146,28 @@
             labels: ["Wins", "Draws", "Losses"],
             datasets: [{
                 data: resultsRaw,
-                backgroundColor: ["#19c37d", "#3a9ad9", "#f43f5e"]
+                backgroundColor: ["#00d97e", "#3b82f6", "#f87171"]
             }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#9198a1",
+                        font: {family: "'DM Mono', monospace", size: 11}
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#5c6370', font: { size: 11 } }
+                },
+                y: {
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#5c6370', font: { size: 11 } }
+                }
+            }
         }
     });
 </script>

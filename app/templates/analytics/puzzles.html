@@ -4,25 +4,15 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 {% endblock %}
 {% block content %}
-<h2 class="text-2xl font-semibold">Puzzle Training</h2>
-<p class="text-slate-400 text-sm mt-1">Performance by puzzle theme from your Lichess dashboard.</p>
+<h2 class="page-title">Puzzle Training</h2>
+<p class="page-subtitle">Performance by puzzle theme from your Lichess dashboard.</p>
 
-<nav class="mt-4">
-    <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-2">
-        {% for day_option in [7, 30, 60, 90] %}
-        {% set active = day_option == active_days %}
-        <a
-            href="{{ url_for('analytics.puzzle_training', days=day_option) }}"
-            class="px-3 py-1.5 rounded-md text-sm border transition-colors
-            {% if active %}
-                border-accent bg-[rgba(25,195,125,0.15)] text-ink
-            {% else %}
-                border-slate-700 text-slate-300 hover:border-accent2 hover:text-ink
-            {% endif %}"
-        >{{ day_option }} days</a>
-        {% endfor %}
-    </div>
-</nav>
+<div class="flex flex-wrap gap-2 mb-5 mt-4">
+    {% for day_option in [7, 30, 60, 90] %}
+    {% set active = day_option == active_days %}
+    <a href="{{ url_for('analytics.puzzle_training', days=day_option) }}" class="tab-pill{% if active %} active{% endif %}">{{ day_option }} days</a>
+    {% endfor %}
+</div>
 
 <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
     <article class="card">
@@ -41,14 +31,14 @@
 
 {% if puzzle_stats.nb == 0 %}
 <section class="card mt-4">
-    <p class="text-slate-400">No puzzle activity found for this period. Solve puzzles on Lichess, then refresh this page.</p>
+    <p class="text-white/50">No puzzle activity found for this period. Solve puzzles on Lichess, then refresh this page.</p>
 </section>
 {% else %}
 <section class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
     <article class="card">
-        <h3 class="text-lg font-semibold">Weakest Themes</h3>
-        <div class="mt-3 text-sm space-y-2">
-            <div class="row font-semibold"><span>Theme</span><span>Attempts | Winrate | Severity</span></div>
+        <h3 class="card-header">Weakest Themes</h3>
+        <div>
+            <div class="row"><span class="row-label">Theme</span><span class="row-value">Attempts | Winrate | Severity</span></div>
             {% for item in puzzle_stats.weakest %}
             {% if item.winrate < 40 %}
             {% set sev_label = "HIGH" %}
@@ -61,36 +51,36 @@
             {% set sev_class = "severity-low" %}
             {% endif %}
             <div class="row">
-                <span>{{ item.theme_name }}</span>
+                <span class="row-label">{{ item.theme_name }}</span>
                 <span class="flex items-center gap-2">
-                    <span>{{ item.nb }} | {{ item.winrate }}%</span>
+                    <span class="row-value">{{ item.nb }} | {{ item.winrate }}%</span>
                     <span class="severity {{ sev_class }}">{{ sev_label }}</span>
                 </span>
             </div>
             {% else %}
-            <p class="text-slate-400">No weak themes matched the threshold.</p>
+            <p class="text-white/50">No weak themes matched the threshold.</p>
             {% endfor %}
         </div>
     </article>
 
     <article class="card">
-        <h3 class="text-lg font-semibold">Strongest Themes</h3>
-        <div class="mt-3 text-sm space-y-2">
-            <div class="row font-semibold"><span>Theme</span><span>Attempts | Winrate</span></div>
+        <h3 class="card-header">Strongest Themes</h3>
+        <div>
+            <div class="row"><span class="row-label">Theme</span><span class="row-value">Attempts | Winrate</span></div>
             {% for item in puzzle_stats.strongest %}
             <div class="row">
-                <span>{{ item.theme_name }}</span>
-                <span>{{ item.nb }} | {{ item.winrate }}%</span>
+                <span class="row-label">{{ item.theme_name }}</span>
+                <span class="row-value">{{ item.nb }} | {{ item.winrate }}%</span>
             </div>
             {% else %}
-            <p class="text-slate-400">No strong themes matched the threshold.</p>
+            <p class="text-white/50">No strong themes matched the threshold.</p>
             {% endfor %}
         </div>
     </article>
 </section>
 
 <section class="card mt-4">
-    <h3 class="text-lg font-semibold">Top Themes by Attempts</h3>
+    <h3 class="card-header">Top Themes by Attempts</h3>
     <canvas id="themeAttemptsChart" height="120" class="mt-4"></canvas>
 </section>
 {% endif %}
@@ -98,6 +88,10 @@
 
 {% block scripts %}
 <script>
+    Chart.defaults.color = '#5c6370';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
     const puzzleStats = {{ puzzle_stats|tojson }};
     const topThemes = (puzzleStats.themes || []).slice(0, 10);
 
@@ -124,7 +118,13 @@
             options: {
                 indexAxis: "y",
                 plugins: {
-                    legend: {display: false},
+                    legend: {
+                        display: false,
+                        labels: {
+                            color: "#9198a1",
+                            font: {family: "'DM Mono', monospace", size: 11}
+                        }
+                    },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
@@ -137,10 +137,12 @@
                 scales: {
                     x: {
                         beginAtZero: true,
-                        ticks: {color: "#9ca3af"}
+                        grid: { color: 'rgba(255,255,255,0.04)' },
+                        ticks: { color: '#5c6370', font: { size: 11 } }
                     },
                     y: {
-                        ticks: {color: "#9ca3af"}
+                        grid: { color: 'rgba(255,255,255,0.04)' },
+                        ticks: { color: '#5c6370', font: { size: 11 } }
                     }
                 }
             }

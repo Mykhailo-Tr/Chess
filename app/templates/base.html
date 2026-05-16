@@ -4,17 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Chess Behavioral Analytics{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        panel: "#131820",
-                        panelSoft: "#1b2330",
-                        ink: "#dde6f2",
-                        accent: "#19c37d",
-                        accent2: "#3a9ad9"
+                        panel: "#0d1117",
+                        panelSoft: "#161b22",
+                        ink: "#e6edf3",
+                        accent: "#00d97e",
+                        accent2: "#3b82f6"
                     }
                 }
             }
@@ -23,48 +25,54 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     {% block head %}{% endblock %}
 </head>
-<body class="h-full bg-slate-950 text-ink">
+<body class="h-full bg-[#080c12] text-ink">
     {% if current_user.is_authenticated %}
     <div class="min-h-full lg:flex">
-        <aside class="w-full lg:w-64 bg-panel border-b lg:border-b-0 lg:border-r border-slate-800 px-4 py-6">
-            <h1 class="text-lg font-semibold">Behavioral Chess</h1>
-            <p class="text-sm text-slate-400 mt-1">@{{ current_user.username }}</p>
-            <nav class="mt-8 space-y-2">
-                <a class="nav-link" href="{{ url_for('dashboard.dashboard_home') }}">Dashboard</a>
-                <a class="nav-link" href="{{ url_for('analytics.analytics_home') }}">Analytics</a>
-                <a class="nav-link" href="{{ url_for('analytics.openings') }}">Openings</a>
-                <a class="nav-link" href="{{ url_for('analytics.weaknesses') }}">Weaknesses</a>
-                <a class="nav-link" href="{{ url_for('analytics.color_analysis') }}">Color Analysis</a>
-                <a class="nav-link" href="{{ url_for('analytics.rating_history') }}">Rating History</a>
-                <a class="nav-link" href="{{ url_for('analytics.play_calendar') }}">Play Calendar</a>
-                <a class="nav-link" href="{{ url_for('analytics.puzzle_training') }}">Puzzle Training</a>
-                <a class="nav-link" href="{{ url_for('analytics.daily_tips') }}">Daily Tips</a>
-                <a class="nav-link" href="{{ url_for('analytics.opponent_strength') }}">Opponents</a>
-                <a class="nav-link" href="{{ url_for('analytics.eco_map') }}">ECO Map</a>
-                <a class="nav-link" href="{{ url_for('analytics.compare_player') }}">Compare Player</a>
-            </nav>
-            {% if live_game and live_game.gameId %}
-            <a
-                class="mt-4 inline-flex items-center gap-2 text-sm text-emerald-200 hover:text-emerald-100"
-                href="https://lichess.org/{{ live_game.gameId }}"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                <div class="animate-pulse bg-green-500 rounded-full w-2 h-2 inline-block"></div>
-                <span>🟢 Game in progress</span>
-            </a>
-            {% endif %}
-            <form class="mt-8" method="post" action="{{ url_for('auth.logout') }}">
-                <button class="btn-secondary w-full" type="submit">Logout</button>
-            </form>
+        <aside class="w-full lg:w-64 bg-panel border-b lg:border-b-0 lg:border-r border-[rgba(255,255,255,0.06)] px-4 py-6 flex flex-col">
+            <div>
+                <h1 class="text-[15px] font-semibold tracking-[-0.02em] text-ink">Behavioral Chess</h1>
+                <p class="text-[12px] text-white/40 mt-1 font-['DM_Mono']">@{{ current_user.username }}</p>
+                <p class="uppercase text-[10px] tracking-[0.1em] text-white/25 mb-2 mt-6">NAVIGATION</p>
+                <nav class="space-y-1">
+                    <a class="nav-link {{ 'active' if request.endpoint == 'dashboard.dashboard_home' else '' }}" href="{{ url_for('dashboard.dashboard_home') }}">Dashboard</a>
+                    <a class="nav-link {{ 'active' if request.endpoint in ['analytics.analytics_home', 'analytics.export_pdf'] else '' }}" href="{{ url_for('analytics.analytics_home') }}">Analytics</a>
+                    <a class="nav-link {{ 'active' if request.endpoint == 'analytics.openings' else '' }}" href="{{ url_for('analytics.openings') }}">Openings</a>
+                    <a class="nav-link {{ 'active' if request.endpoint == 'analytics.weaknesses' else '' }}" href="{{ url_for('analytics.weaknesses') }}">Weaknesses</a>
+                    <a class="nav-link {{ 'active' if request.endpoint == 'analytics.color_analysis' else '' }}" href="{{ url_for('analytics.color_analysis') }}">Color Analysis</a>
+                    <a class="nav-link {{ 'active' if request.endpoint == 'analytics.rating_history' else '' }}" href="{{ url_for('analytics.rating_history') }}">Rating History</a>
+                    <a class="nav-link {{ 'active' if request.endpoint == 'analytics.play_calendar' else '' }}" href="{{ url_for('analytics.play_calendar') }}">Play Calendar</a>
+                    <a class="nav-link {{ 'active' if request.endpoint == 'analytics.puzzle_training' else '' }}" href="{{ url_for('analytics.puzzle_training') }}">Puzzle Training</a>
+                    <a class="nav-link {{ 'active' if request.endpoint == 'analytics.daily_tips' else '' }}" href="{{ url_for('analytics.daily_tips') }}">Daily Tips</a>
+                    <a class="nav-link {{ 'active' if request.endpoint == 'analytics.opponent_strength' else '' }}" href="{{ url_for('analytics.opponent_strength') }}">Opponents</a>
+                    <a class="nav-link {{ 'active' if request.endpoint == 'analytics.eco_map' else '' }}" href="{{ url_for('analytics.eco_map') }}">ECO Map</a>
+                    <a class="nav-link {{ 'active' if request.endpoint == 'analytics.compare_player' else '' }}" href="{{ url_for('analytics.compare_player') }}">Compare Player</a>
+                </nav>
+                {% if live_game and live_game.gameId %}
+                <a
+                    class="mt-4 inline-flex items-center gap-2 text-[12px] text-emerald-200 hover:text-emerald-100"
+                    href="https://lichess.org/{{ live_game.gameId }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <div class="animate-pulse bg-green-500 rounded-full w-2 h-2 inline-block"></div>
+                    <span class="font-['DM_Mono'] text-[11px] border border-emerald-400/50 rounded-full px-2 py-0.5">Live</span>
+                    <span>Game in progress</span>
+                </a>
+                {% endif %}
+            </div>
+            <div class="mt-auto pt-6 border-t border-[rgba(255,255,255,0.06)]">
+                <form method="post" action="{{ url_for('auth.logout') }}">
+                    <button class="btn-secondary w-full" type="submit">Logout</button>
+                </form>
+            </div>
         </aside>
-        <main class="flex-1 p-4 md:p-8">
+        <main class="flex-1 p-6 md:p-8 bg-[#080c12]">
             {% include "partials/flash.html" %}
             {% block content %}{% endblock %}
         </main>
     </div>
     {% else %}
-    <main class="min-h-full">
+    <main class="min-h-full bg-[#080c12]">
         {% include "partials/flash.html" %}
         {% block public_content %}{% endblock %}
     </main>
