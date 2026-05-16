@@ -75,3 +75,15 @@ class LichessClient:
         )
         response.raise_for_status()
         return response.json()
+
+    def get_puzzle_dashboard(self, access_token: str, days: int = 30) -> dict[str, Any]:
+        response = requests.get(
+            f"{self.api_base}/puzzle/dashboard/{days}",
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {access_token}",
+            },
+            timeout=20,
+        )
+        response.raise_for_status()
+        return response.json()

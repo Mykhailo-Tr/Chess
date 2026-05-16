@@ -5,6 +5,7 @@ from flask_login import current_user, login_required
 from sqlalchemy import case
 
 from app.analytics.color_analysis import analyze_by_color
+from app.analytics.puzzle_stats import parse_puzzle_dashboard
 from app.analytics.rating_history import parse_rating_history
 from app.analytics.session_stats import build_calendar_heatmap, build_session_stats
 from app.analytics import analytics_bp
@@ -13,6 +14,7 @@ from app.lichess.client import LichessClient
 from app.models import Game
 
 VALID_SPEEDS = {"bullet", "blitz", "rapid", "classical"}
+VALID_PUZZLE_DAYS = {7, 30, 60, 90}
 
 
 def _normalize_speed(value: str | None) -> str | None:
@@ -110,4 +112,40 @@ def play_calendar():
         calendar=calendar,
         session_stats=session_stats,
         active_speed=active_speed,
+    )
+
+
+@analytics_bp.route("/puzzles")
+@login_required
+def puzzle_training():
+    days = request.args.get("days", type=int) or 30
+    if days not in VALID_PUZZLE_DAYS:
+        days = 30
+
+    puzzle_stats = {
+        "days": days,
+        "nb": 0,
+        "wins": 0,
+        "winrate": 0.0,
+        "themes": [],
+        "weakest": [],
+        "strongest": [],
+    }
+
+    try:
+        if not current_user.access_token:
+            raise ValueError("Missing Lichess access token")
+
+        client = LichessClient.from_app(current_app)
+        raw_dashboard = client.get_puzzle_dashboard(current_user.access_token, days=days)
+        puzzle_stats = parse_puzzle_dashboard(raw_dashboard)
+        if not puzzle_stats.get("days"):
+            puzzle_stats["days"] = days
+    except Exception:  # noqa: BLE001 - keep page available with empty state
+        pass
+
+    return render_template(
+        "analytics/puzzles.html",
+        puzzle_stats=puzzle_stats,
+        active_days=days,
     )
