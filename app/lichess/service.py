@@ -4,10 +4,13 @@ from datetime import UTC, datetime
 from typing import Any
 
 from flask import current_app
+from sqlalchemy import func
 
 from app.extensions import db
 from app.lichess.client import LichessClient
 from app.models import Game, User
+
+ABORTED_STATUSES = {"aborted", "noStart", "unknownFinish", "cheat", "timeout"}
 
 
 def sync_recent_games(user: User, max_games: int = 50) -> int:
@@ -16,11 +19,15 @@ def sync_recent_games(user: User, max_games: int = 50) -> int:
     profile = client.get_profile(user.access_token or "")
     user.ratings_snapshot = _extract_ratings(profile)
     user.last_synced_at = datetime.now(UTC)
+    latest_game = db.session.query(func.max(Game.played_at)).filter_by(user_id=user.id).scalar()
+    since_ts = int(latest_game.timestamp() * 1000) if latest_game else None
+    effective_max_games = min(max(max_games, 1), 500) if since_ts is not None else max_games
 
     raw_games = client.export_games(
         username=user.username,
-        max_games=max_games,
+        max_games=effective_max_games,
         access_token=user.access_token,
+        since=since_ts,
     )
 
     imported = 0
@@ -28,16 +35,21 @@ def sync_recent_games(user: User, max_games: int = 50) -> int:
         game_id = raw_game.get("id")
         if not game_id:
             continue
+        result = _resolve_result(raw_game, user.username)
+        if raw_game.get("status") in ABORTED_STATUSES:
+            continue
 
         existing = Game.query.filter_by(user_id=user.id, lichess_game_id=game_id).first()
         if existing:
             continue
 
+        clocks_array = raw_game.get("clocks")
+        clock_data = clocks_array if isinstance(clocks_array, list) else None
         game_obj = Game(
             user_id=user.id,
             lichess_game_id=game_id,
             pgn=raw_game.get("pgn", ""),
-            result=_resolve_result(raw_game, user.username),
+            result=result,
             opening=_resolve_opening(raw_game),
             eco=_resolve_eco(raw_game),
             played_at=_resolve_played_at(raw_game),
@@ -48,7 +60,7 @@ def sync_recent_games(user: User, max_games: int = 50) -> int:
             termination=raw_game.get("status"),
             rating=_resolve_rating(raw_game, user.username),
             moves_count=raw_game.get("turns"),
-            clock_data=raw_game.get("clocks") or raw_game.get("clock"),
+            clock_data=clock_data,
             division_json=raw_game.get("division"),
             metadata_json={
                 "rated": raw_game.get("rated"),
@@ -104,14 +116,15 @@ def _resolve_rating(raw_game: dict[str, Any], username: str) -> int | None:
 
 
 def _resolve_result(raw_game: dict[str, Any], username: str) -> str:
+    status = raw_game.get("status", "")
+    if status in ABORTED_STATUSES:
+        return "DRAW"
     winner = raw_game.get("winner")
     if not winner:
         return "DRAW"
 
     color = _resolve_color(raw_game, username)
-    if winner == color:
-        return "WIN"
-    return "LOSS"
+    return "WIN" if winner == color else "LOSS"
 
 
 def _resolve_time_control(raw_game: dict[str, Any]) -> str:

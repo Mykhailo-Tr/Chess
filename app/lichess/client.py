@@ -33,6 +33,7 @@ class LichessClient:
         username: str,
         max_games: int = 50,
         access_token: str | None = None,
+        since: int | None = None,
     ) -> list[dict[str, Any]]:
         headers = {"Accept": "application/x-ndjson"}
         if access_token:
@@ -40,13 +41,16 @@ class LichessClient:
 
         params = {
             "max": max_games,
-            "opening": "true",
-            "clocks": "true",
-            "accuracy": "true",
-            "division": "true",
-            "pgnInJson": "true",
-            "moves": "true",
+            "opening": True,
+            "clocks": True,
+            "division": True,
+            "pgnInJson": True,
+            "moves": True,
+            "sort": "dateDesc",
         }
+        if since is not None:
+            params["since"] = since
+            params["sort"] = "dateAsc"
         response = requests.get(
             f"{self.api_base}/games/user/{username}",
             params=params,

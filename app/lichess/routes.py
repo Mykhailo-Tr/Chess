@@ -14,10 +14,11 @@ from app.models import Game
 @login_required
 def import_recent_games():
     max_games = request.form.get("max_games", type=int) or 50
-    max_games = min(max(max_games, 1), 200)
+    max_games = min(max(max_games, 1), 500)
 
     try:
         imported_count = sync_recent_games(current_user, max_games=max_games)
+        total_games = Game.query.filter_by(user_id=current_user.id).count()
         games = (
             Game.query.filter_by(user_id=current_user.id)
             .order_by(
@@ -28,7 +29,16 @@ def import_recent_games():
             .all()
         )
         create_analysis_report(current_user, games)
-        flash(f"Imported {imported_count} new games and refreshed analytics.", "success")
+        if imported_count == 0:
+            flash(
+                f"No new games found since last import. Total: {total_games} games in database.",
+                "success",
+            )
+        else:
+            flash(
+                f"Imported {imported_count} new games. Total: {total_games} games in database.",
+                "success",
+            )
     except Exception as exc:  # noqa: BLE001 - MVP fallback messaging
         flash(f"Import failed: {exc}", "danger")
 
