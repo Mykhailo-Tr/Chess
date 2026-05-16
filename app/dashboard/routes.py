@@ -5,6 +5,7 @@ from flask_login import current_user, login_required
 from sqlalchemy import case
 
 from app.analytics.reports import build_behavior_report, latest_or_create_report
+from app.analytics.tilt import tilt_guard_message
 from app.dashboard import dashboard_bp
 from app.models import Game
 
@@ -57,6 +58,8 @@ def dashboard_home():
         sum(1 for g in games if g.result == "DRAW"),
         sum(1 for g in games if g.result == "LOSS"),
     ]
+    dismiss_tilt_guard = request.args.get("dismiss_tilt_guard") == "1"
+    tilt_guard = None if dismiss_tilt_guard else tilt_guard_message(payload.get("tilt") or {})
 
     return render_template(
         "dashboard/index.html",
@@ -65,4 +68,5 @@ def dashboard_home():
         openings_chart=openings_chart,
         results_chart=results_chart,
         active_speed=active_speed,
+        tilt_guard=tilt_guard,
     )

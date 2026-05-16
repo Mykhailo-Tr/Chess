@@ -73,3 +73,18 @@ def _accuracy_drop_placeholder(games: list[Game]) -> float:
     if losses.size == 0:
         return 0.0
     return round(float(losses.mean() * 100), 2)
+
+
+def tilt_guard_message(tilt_data: dict[str, Any]) -> str | None:
+    signals = tilt_data.get("signals")
+    if not isinstance(signals, dict):
+        signals = {}
+
+    losing_streak = signals.get("losing_streak")
+    if isinstance(losing_streak, int) and losing_streak >= 3:
+        return "Tilt guard: you are on a 3+ game losing streak. Take a 10-minute break before the next game."
+
+    if tilt_data.get("level") == "HIGH":
+        return "Tilt guard warning: your current tilt level is HIGH. Pause queueing and reset before playing again."
+
+    return None

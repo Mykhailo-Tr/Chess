@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 from flask import current_app, flash, render_template, request
 from flask_login import current_user, login_required
 from sqlalchemy import case
@@ -8,6 +10,7 @@ from app.analytics.color_analysis import analyze_by_color
 from app.analytics.puzzle_stats import parse_puzzle_dashboard
 from app.analytics.rating_history import parse_rating_history
 from app.analytics.session_stats import build_calendar_heatmap, build_session_stats
+from app.analytics.tips import generate_daily_tips
 from app.analytics import analytics_bp
 from app.analytics.reports import build_behavior_report, latest_or_create_report
 from app.lichess.client import LichessClient
@@ -148,4 +151,17 @@ def puzzle_training():
         "analytics/puzzles.html",
         puzzle_stats=puzzle_stats,
         active_days=days,
+    )
+
+
+@analytics_bp.route("/tips")
+@login_required
+def daily_tips():
+    payload = _build_report_payload()
+    tips = generate_daily_tips(payload)
+    today_label = datetime.now(UTC).strftime("%B %d, %Y")
+    return render_template(
+        "analytics/tips.html",
+        tips=tips,
+        today_label=today_label,
     )
