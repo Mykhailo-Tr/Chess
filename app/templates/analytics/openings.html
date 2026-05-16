@@ -13,7 +13,11 @@
             <div class="row">
                 <span class="row-label">
                     {% set opening_slug = item.opening | lower | replace(" ", "_") | replace(",", "") | replace("'", "") %}
-                    <a href="https://lichess.org/analysis#explorer" title="Explore {{ item.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ item.opening }}</a>
+                    {% if item.opening and item.opening != "Unknown Opening" %}
+                    <a href="https://lichess.org/opening/{{ opening_slug }}" title="Open {{ item.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ item.opening }}</a>
+                    {% else %}
+                    {{ item.opening }}
+                    {% endif %}
                 </span>
                 <span class="row-value">{{ item.games }} games</span>
             </div>
@@ -29,7 +33,11 @@
             <div class="row">
                 <span class="row-label">
                     {% set opening_slug = item.opening | lower | replace(" ", "_") | replace(",", "") | replace("'", "") %}
-                    <a href="https://lichess.org/analysis#explorer" title="Explore {{ item.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ item.opening }}</a>
+                    {% if item.opening and item.opening != "Unknown Opening" %}
+                    <a href="https://lichess.org/opening/{{ opening_slug }}" title="Open {{ item.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ item.opening }}</a>
+                    {% else %}
+                    {{ item.opening }}
+                    {% endif %}
                 </span>
                 <span class="row-value">{{ item.winrate }}%</span>
             </div>
@@ -45,7 +53,11 @@
             <div class="row">
                 <span class="row-label">
                     {% set opening_slug = item.opening | lower | replace(" ", "_") | replace(",", "") | replace("'", "") %}
-                    <a href="https://lichess.org/analysis#explorer" title="Explore {{ item.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ item.opening }}</a>
+                    {% if item.opening and item.opening != "Unknown Opening" %}
+                    <a href="https://lichess.org/opening/{{ opening_slug }}" title="Open {{ item.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ item.opening }}</a>
+                    {% else %}
+                    {{ item.opening }}
+                    {% endif %}
                 </span>
                 <span class="row-value">{{ item.winrate }}%</span>
             </div>

@@ -23,7 +23,11 @@
                 <div class="row">
                     <span class="row-label">
                         {% set opening_slug = opening.opening | lower | replace(" ", "_") | replace(",", "") | replace("'", "") %}
-                        <a href="https://lichess.org/analysis#explorer" title="Explore {{ opening.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ opening.opening }}</a>
+                        {% if opening.opening and opening.opening != "Unknown Opening" %}
+                        <a href="https://lichess.org/opening/{{ opening_slug }}" title="Open {{ opening.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ opening.opening }}</a>
+                        {% else %}
+                        {{ opening.opening }}
+                        {% endif %}
                     </span>
                     <span class="row-value">{{ opening.games }} games | {{ opening.winrate }}%</span>
                 </div>
@@ -49,7 +53,11 @@
                 <div class="row">
                     <span class="row-label">
                         {% set opening_slug = opening.opening | lower | replace(" ", "_") | replace(",", "") | replace("'", "") %}
-                        <a href="https://lichess.org/analysis#explorer" title="Explore {{ opening.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ opening.opening }}</a>
+                        {% if opening.opening and opening.opening != "Unknown Opening" %}
+                        <a href="https://lichess.org/opening/{{ opening_slug }}" title="Open {{ opening.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ opening.opening }}</a>
+                        {% else %}
+                        {{ opening.opening }}
+                        {% endif %}
                     </span>
                     <span class="row-value">{{ opening.games }} games | {{ opening.winrate }}%</span>
                 </div>
