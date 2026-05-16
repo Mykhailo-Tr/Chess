@@ -39,6 +39,7 @@ body {
     border-radius: 0.75rem;
     padding: 1.25rem;
     position: relative;
+    transition: border-color 0.15s;
 }
 .card-header {
     font-size: 0.8rem;
@@ -94,6 +95,49 @@ body {
     font-family: 'DM Mono', monospace;
     font-size: 0.8rem;
     color: #e6edf3;
+}
+
+/* Clickable rows */
+a.row, .row.clickable {
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.12s;
+}
+a.row:hover, .row.clickable:hover {
+    background: rgba(0,217,126,0.04);
+    border-radius: 0.35rem;
+    margin: 0 -0.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+/* External link indicator */
+.ext-link::after {
+    content: ' ↗';
+    font-size: 0.7em;
+    opacity: 0.45;
+    vertical-align: super;
+}
+
+/* Card hover (for clickable cards) */
+a.card {
+    text-decoration: none;
+    display: block;
+    transition: border-color 0.15s, background 0.15s;
+}
+a.card:hover {
+    border-color: rgba(0,217,126,0.25);
+    background: rgba(0,217,126,0.02);
+}
+
+/* ECO cells */
+.eco-cell {
+    cursor: pointer;
+    transition: filter 0.15s;
+}
+.eco-cell:hover {
+    filter: brightness(1.35);
+    outline: 1px solid rgba(255,255,255,0.2);
 }
 
 /* -- Buttons -- */

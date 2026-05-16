@@ -23,12 +23,50 @@
     <article class="card">
         <p class="metric-label">Best Win</p>
         {% if stats.best_wins %}
-        <p class="metric-value sm">{{ stats.best_wins[0].opId }}</p>
+        <p class="metric-value sm">
+            <a href="https://lichess.org/@/{{ stats.best_wins[0].opId }}" target="_blank" rel="noopener" class="hover:text-accent hover:underline font-mono">{{ stats.best_wins[0].opId }}</a>
+            <span class="text-xs opacity-40 ml-1">↗</span>
+        </p>
         <p class="metric-delta">Rating: {{ stats.best_wins[0].opRating }}</p>
         {% else %}
         <p class="metric-value">N/A</p>
         <p class="metric-delta">No best win data.</p>
         {% endif %}
+    </article>
+</section>
+
+<section class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
+    <article class="card">
+        <h3 class="card-header">Best Wins</h3>
+        <div>
+            {% for item in stats.best_wins %}
+            <div class="row">
+                <span class="row-label">
+                    <a href="https://lichess.org/@/{{ item.opId }}" target="_blank" rel="noopener" class="hover:text-accent hover:underline font-mono">{{ item.opId }}</a>
+                    <span class="text-xs opacity-40 ml-1">↗</span>
+                </span>
+                <span class="row-value">{{ item.opRating }}</span>
+            </div>
+            {% else %}
+            <p class="text-white/50">No best win entries.</p>
+            {% endfor %}
+        </div>
+    </article>
+    <article class="card">
+        <h3 class="card-header">Worst Losses</h3>
+        <div>
+            {% for item in stats.worst_losses %}
+            <div class="row">
+                <span class="row-label">
+                    <a href="https://lichess.org/@/{{ item.opId }}" target="_blank" rel="noopener" class="hover:text-accent hover:underline font-mono">{{ item.opId }}</a>
+                    <span class="text-xs opacity-40 ml-1">↗</span>
+                </span>
+                <span class="row-value">{{ item.opRating }}</span>
+            </div>
+            {% else %}
+            <p class="text-white/50">No worst loss entries.</p>
+            {% endfor %}
+        </div>
     </article>
 </section>
 

@@ -24,6 +24,7 @@
         justify-content: center;
         font-size: 0.72rem;
         color: #e2e8f0;
+        text-decoration: none;
     }
 </style>
 {% endblock %}
@@ -51,6 +52,18 @@
                 {% else %}
                 {% set bg = "rgba(0,217,126,0.35)" %}
                 {% endif %}
+                {% if cell.games > 0 %}
+                <a
+                    href="https://lichess.org/opening/{{ cell.code | replace('x','') }}"
+                    target="_blank"
+                    rel="noopener"
+                    class="eco-cell"
+                    style="background: {{ bg }}"
+                    title="{{ cell.code }}: {{ cell.games }} games{% if cell.games > 0 %}, {{ cell.winrate }}% winrate{% endif %}"
+                >
+                    <span style="font-family: 'DM Mono', monospace; font-size: 11px;">{{ cell.games }}</span>
+                </a>
+                {% else %}
                 <div
                     class="eco-cell"
                     style="background: {{ bg }}"
@@ -62,6 +75,7 @@
                     <span style="font-family: 'DM Mono', monospace; font-size: 11px;">-</span>
                     {% endif %}
                 </div>
+                {% endif %}
                 {% endfor %}
             </div>
         </div>

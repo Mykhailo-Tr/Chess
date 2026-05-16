@@ -18,6 +18,13 @@
             <div>
                 <h3 class="text-[14px] font-semibold text-ink">{{ weakness.label }}</h3>
                 <p class="text-[13px] text-white/65 mt-1">{{ weakness.insight }}</p>
+                {% if "Endgame" in weakness.label %}
+                <a href="https://lichess.org/practice#endgames" target="_blank" rel="noopener" class="text-xs text-accent hover:underline mt-2 inline-block">→ Endgame practice ↗</a>
+                {% elif "Gambit" in weakness.label %}
+                <a href="https://lichess.org/opening/search?q=gambit" target="_blank" rel="noopener" class="text-xs text-accent hover:underline mt-2 inline-block">→ Study gambits ↗</a>
+                {% elif "Middlegame" in weakness.label %}
+                <a href="https://lichess.org/practice" target="_blank" rel="noopener" class="text-xs text-accent hover:underline mt-2 inline-block">→ Practice positions ↗</a>
+                {% endif %}
             </div>
             <span class="severity severity-{{ weakness.severity|lower }}">{{ weakness.severity }}</span>
         </div>

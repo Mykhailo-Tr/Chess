@@ -20,7 +20,13 @@
             <p class="metric-label mb-2">Top Openings</p>
             <div>
                 {% for opening in color_stats.white.openings %}
-                <div class="row"><span class="row-label">{{ opening.opening }}</span><span class="row-value">{{ opening.games }} games | {{ opening.winrate }}%</span></div>
+                <div class="row">
+                    <span class="row-label">
+                        {% set opening_slug = opening.opening | lower | replace(" ", "_") | replace(",", "") | replace("'", "") %}
+                        <a href="https://lichess.org/analysis#explorer" title="Explore {{ opening.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ opening.opening }}</a>
+                    </span>
+                    <span class="row-value">{{ opening.games }} games | {{ opening.winrate }}%</span>
+                </div>
                 {% else %}
                 <p class="text-white/50">No opening data yet.</p>
                 {% endfor %}
@@ -40,7 +46,13 @@
             <p class="metric-label mb-2">Top Openings</p>
             <div>
                 {% for opening in color_stats.black.openings %}
-                <div class="row"><span class="row-label">{{ opening.opening }}</span><span class="row-value">{{ opening.games }} games | {{ opening.winrate }}%</span></div>
+                <div class="row">
+                    <span class="row-label">
+                        {% set opening_slug = opening.opening | lower | replace(" ", "_") | replace(",", "") | replace("'", "") %}
+                        <a href="https://lichess.org/analysis#explorer" title="Explore {{ opening.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ opening.opening }}</a>
+                    </span>
+                    <span class="row-value">{{ opening.games }} games | {{ opening.winrate }}%</span>
+                </div>
                 {% else %}
                 <p class="text-white/50">No opening data yet.</p>
                 {% endfor %}

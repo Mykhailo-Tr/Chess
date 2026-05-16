@@ -51,7 +51,9 @@
             {% set sev_class = "severity-low" %}
             {% endif %}
             <div class="row">
-                <span class="row-label">{{ item.theme_name }}</span>
+                <span class="row-label">
+                    <a href="https://lichess.org/training/{{ item.theme_name }}" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ item.theme_name }}</a>
+                </span>
                 <span class="flex items-center gap-2">
                     <span class="row-value">{{ item.nb }} | {{ item.winrate }}%</span>
                     <span class="severity {{ sev_class }}">{{ sev_label }}</span>
@@ -69,7 +71,9 @@
             <div class="row"><span class="row-label">Theme</span><span class="row-value">Attempts | Winrate</span></div>
             {% for item in puzzle_stats.strongest %}
             <div class="row">
-                <span class="row-label">{{ item.theme_name }}</span>
+                <span class="row-label">
+                    <a href="https://lichess.org/training/{{ item.theme_name }}" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ item.theme_name }}</a>
+                </span>
                 <span class="row-value">{{ item.nb }} | {{ item.winrate }}%</span>
             </div>
             {% else %}
@@ -116,6 +120,17 @@
                 }]
             },
             options: {
+                onClick: (evt, elements) => {
+                    if (elements.length > 0) {
+                        const theme = topThemes[elements[0].index].theme_name;
+                        window.open('https://lichess.org/training/' + theme, '_blank');
+                    }
+                },
+                onHover: (evt, elements) => {
+                    if (evt && evt.native && evt.native.target) {
+                        evt.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+                    }
+                },
                 indexAxis: "y",
                 plugins: {
                     legend: {

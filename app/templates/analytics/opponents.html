@@ -11,7 +11,7 @@
     <article class="card">
         <p class="metric-label">Best Win</p>
         {% if opponent_stats.best_win %}
-        <p class="metric-value sm">{{ opponent_stats.best_win.opponent }}</p>
+        <a href="https://lichess.org/@/{{ opponent_stats.best_win.opponent }}" target="_blank" rel="noopener" class="metric-value sm hover:text-accent transition-colors">{{ opponent_stats.best_win.opponent }}</a>
         <p class="metric-delta">Rating: {{ opponent_stats.best_win.rating }}</p>
         {% else %}
         <p class="metric-value">N/A</p>
@@ -21,7 +21,7 @@
     <article class="card">
         <p class="metric-label">Toughest Loss</p>
         {% if opponent_stats.toughest_loss %}
-        <p class="metric-value sm">{{ opponent_stats.toughest_loss.opponent }}</p>
+        <a href="https://lichess.org/@/{{ opponent_stats.toughest_loss.opponent }}" target="_blank" rel="noopener" class="metric-value sm hover:text-accent transition-colors">{{ opponent_stats.toughest_loss.opponent }}</a>
         <p class="metric-delta">Rating: {{ opponent_stats.toughest_loss.rating }}</p>
         {% else %}
         <p class="metric-value">N/A</p>

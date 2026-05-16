@@ -10,7 +10,13 @@
         <h3 class="card-header">Favorite Openings</h3>
         <div>
             {% for item in payload.openings.favorite %}
-            <div class="row"><span class="row-label">{{ item.opening }}</span><span class="row-value">{{ item.games }} games</span></div>
+            <div class="row">
+                <span class="row-label">
+                    {% set opening_slug = item.opening | lower | replace(" ", "_") | replace(",", "") | replace("'", "") %}
+                    <a href="https://lichess.org/analysis#explorer" title="Explore {{ item.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ item.opening }}</a>
+                </span>
+                <span class="row-value">{{ item.games }} games</span>
+            </div>
             {% else %}
             <p class="text-white/50">No opening data yet.</p>
             {% endfor %}
@@ -20,7 +26,13 @@
         <h3 class="card-header">Best Winrate</h3>
         <div>
             {% for item in payload.openings.best %}
-            <div class="row"><span class="row-label">{{ item.opening }}</span><span class="row-value">{{ item.winrate }}%</span></div>
+            <div class="row">
+                <span class="row-label">
+                    {% set opening_slug = item.opening | lower | replace(" ", "_") | replace(",", "") | replace("'", "") %}
+                    <a href="https://lichess.org/analysis#explorer" title="Explore {{ item.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ item.opening }}</a>
+                </span>
+                <span class="row-value">{{ item.winrate }}%</span>
+            </div>
             {% else %}
             <p class="text-white/50">Not enough games yet.</p>
             {% endfor %}
@@ -30,7 +42,13 @@
         <h3 class="card-header">Worst Winrate</h3>
         <div>
             {% for item in payload.openings.worst %}
-            <div class="row"><span class="row-label">{{ item.opening }}</span><span class="row-value">{{ item.winrate }}%</span></div>
+            <div class="row">
+                <span class="row-label">
+                    {% set opening_slug = item.opening | lower | replace(" ", "_") | replace(",", "") | replace("'", "") %}
+                    <a href="https://lichess.org/analysis#explorer" title="Explore {{ item.opening }} on Lichess" target="_blank" rel="noopener" class="hover:text-accent hover:underline transition-colors">{{ item.opening }}</a>
+                </span>
+                <span class="row-value">{{ item.winrate }}%</span>
+            </div>
             {% else %}
             <p class="text-white/50">Not enough games yet.</p>
             {% endfor %}

@@ -18,7 +18,14 @@
 <section class="card mt-4">
     <h3 class="card-header">Player Snapshot</h3>
     <div>
-        <div class="row"><span class="row-label">Metric</span><span class="row-value">{{ comparison.me.username }} | {{ comparison.opponent.username }}</span></div>
+        <div class="row">
+            <span class="row-label">Metric</span>
+            <span class="row-value">
+                <a href="https://lichess.org/@/{{ comparison.me.username }}" target="_blank" rel="noopener" class="text-accent hover:underline font-mono">{{ comparison.me.username }}</a>
+                |
+                <a href="https://lichess.org/@/{{ comparison.opponent.username }}" target="_blank" rel="noopener" class="text-accent hover:underline font-mono">{{ comparison.opponent.username }}</a>
+            </span>
+        </div>
         <div class="row"><span class="row-label">Bullet Rating</span><span class="row-value">{{ comparison.me.ratings.bullet }} | {{ comparison.opponent.ratings.bullet }}</span></div>
         <div class="row"><span class="row-label">Blitz Rating</span><span class="row-value">{{ comparison.me.ratings.blitz }} | {{ comparison.opponent.ratings.blitz }}</span></div>
         <div class="row"><span class="row-label">Rapid Rating</span><span class="row-value">{{ comparison.me.ratings.rapid }} | {{ comparison.opponent.ratings.rapid }}</span></div>
@@ -34,6 +41,9 @@
             <div class="row"><span class="row-label">Score</span><span class="row-value">{{ comparison.crosstable_summary.score_user1 }} - {{ comparison.crosstable_summary.score_user2 }}</span></div>
             <div class="row"><span class="row-label">Games</span><span class="row-value">{{ comparison.crosstable_summary.total_games }}</span></div>
         </div>
+        <a href="https://lichess.org/@/{{ comparison.opponent.username }}" target="_blank" rel="noopener" class="btn-ghost text-xs mt-3 inline-flex items-center gap-1">
+            View {{ comparison.opponent.username }} on Lichess <span>↗</span>
+        </a>
     </article>
     <article class="card">
         <h3 class="card-header">Local Game History</h3>

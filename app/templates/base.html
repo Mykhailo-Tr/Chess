@@ -31,7 +31,9 @@
         <aside class="w-full lg:w-64 bg-panel border-b lg:border-b-0 lg:border-r border-[rgba(255,255,255,0.06)] px-4 py-6 flex flex-col">
             <div>
                 <h1 class="text-[15px] font-semibold tracking-[-0.02em] text-ink">Behavioral Chess</h1>
-                <p class="text-[12px] text-white/40 mt-1 font-['DM_Mono']">@{{ current_user.username }}</p>
+                <p class="text-[12px] text-white/40 mt-1 font-['DM_Mono']">
+                    @<a href="https://lichess.org/@/{{ current_user.username }}" target="_blank" rel="noopener" class="text-accent hover:underline font-mono">{{ current_user.username }}</a>
+                </p>
                 <p class="uppercase text-[10px] tracking-[0.1em] text-white/25 mb-2 mt-6">NAVIGATION</p>
                 <nav class="space-y-1">
                     <a class="nav-link {{ 'active' if request.endpoint == 'dashboard.dashboard_home' else '' }}" href="{{ url_for('dashboard.dashboard_home') }}">Dashboard</a>
@@ -53,6 +55,7 @@
                     href="https://lichess.org/{{ live_game.gameId }}"
                     target="_blank"
                     rel="noopener noreferrer"
+                    title="{% if live_game.color %}You are playing as {{ live_game.color }} — click to watch{% else %}Game in progress — click to watch{% endif %}"
                 >
                     <div class="animate-pulse bg-green-500 rounded-full w-2 h-2 inline-block"></div>
                     <span class="font-['DM_Mono'] text-[11px] border border-emerald-400/50 rounded-full px-2 py-0.5">Live</span>

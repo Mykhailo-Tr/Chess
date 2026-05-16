@@ -23,6 +23,23 @@
             <div>
                 <h3 class="text-[14px] font-semibold" style="font-family: 'Inter', sans-serif;">{{ tip.title }}</h3>
                 <p class="text-[13px] mt-1" style="font-family: 'Inter', sans-serif; color: rgba(230,237,243,0.65);">{{ tip.body }}</p>
+                {% if "Opening" in tip.title %}
+                <a href="https://lichess.org/opening" target="_blank" rel="noopener" class="text-xs text-accent hover:underline mt-2 inline-block">
+                    → Browse openings on Lichess ↗
+                </a>
+                {% elif "Endgame" in tip.title %}
+                <a href="https://lichess.org/practice" target="_blank" rel="noopener" class="text-xs text-accent hover:underline mt-2 inline-block">
+                    → Endgame practice on Lichess ↗
+                </a>
+                {% elif "Puzzle" in tip.title or "Panic" in tip.title %}
+                <a href="https://lichess.org/training" target="_blank" rel="noopener" class="text-xs text-accent hover:underline mt-2 inline-block">
+                    → Solve puzzles on Lichess ↗
+                </a>
+                {% elif "Tilt" in tip.title %}
+                <a href="https://lichess.org/training/endgames" target="_blank" rel="noopener" class="text-xs text-accent hover:underline mt-2 inline-block">
+                    → Study instead of playing ↗
+                </a>
+                {% endif %}
             </div>
         </div>
     </article>

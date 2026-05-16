@@ -10,7 +10,7 @@
 <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
     {% for perf in ["bullet", "blitz", "rapid", "classical"] %}
     {% set entries = history.get(perf, []) %}
-    <div class="card">
+    <a href="{{ url_for('analytics.perf_stats', perf=perf) }}" class="card block hover:border-accent/30 transition-colors">
         <p class="metric-label">{{ perf }}</p>
         {% if entries %}
         <p class="metric-value">{{ entries[-1].rating }}</p>
@@ -18,7 +18,7 @@
         {% else %}
         <p class="text-white/50 text-sm mt-2">No data</p>
         {% endif %}
-    </div>
+    </a>
     {% endfor %}
 </section>
 
