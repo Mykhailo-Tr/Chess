@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from flask import render_template
+from flask import current_app, flash, render_template
 from flask_login import current_user, login_required
 from sqlalchemy import case
 
+from app.analytics.rating_history import parse_rating_history
 from app.analytics import analytics_bp
 from app.analytics.reports import latest_or_create_report
+from app.lichess.client import LichessClient
 from app.models import Game
 
 
@@ -42,3 +44,21 @@ def openings():
 def weaknesses():
     payload = _build_report_payload()
     return render_template("analytics/weaknesses.html", payload=payload)
+
+
+@analytics_bp.route("/rating-history")
+@login_required
+def rating_history():
+    history: dict = {}
+
+    try:
+        client = LichessClient.from_app(current_app)
+        raw_history = client.get_rating_history(
+            username=current_user.username,
+            access_token=current_user.access_token,
+        )
+        history = parse_rating_history(raw_history)
+    except Exception as exc:  # noqa: BLE001 - page should remain available if API is unavailable
+        flash(f"Could not load rating history: {exc}", "warning")
+
+    return render_template("analytics/rating_history.html", history=history)

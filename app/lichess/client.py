@@ -62,3 +62,16 @@ class LichessClient:
                 continue
             games.append(json.loads(line))
         return games
+
+    def get_rating_history(self, username: str, access_token: str | None = None) -> list[dict[str, Any]]:
+        headers = {"Accept": "application/json"}
+        if access_token:
+            headers["Authorization"] = f"Bearer {access_token}"
+
+        response = requests.get(
+            f"{self.api_base}/user/{username}/rating-history",
+            headers=headers,
+            timeout=20,
+        )
+        response.raise_for_status()
+        return response.json()

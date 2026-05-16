@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Rating History{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<h2 class="text-2xl font-semibold">Rating History</h2>
+<p class="text-slate-400 text-sm mt-1">Progression over time across major time controls.</p>
+
+<section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+    {% for perf in ["bullet", "blitz", "rapid", "classical"] %}
+    {% set entries = history.get(perf, []) %}
+    <div class="card">
+        <p class="metric-label">{{ perf }}</p>
+        {% if entries %}
+        <p class="metric-value">{{ entries[-1].rating }}</p>
+        <p class="text-xs text-slate-400 mt-2">Last updated: {{ entries[-1].date }}</p>
+        {% else %}
+        <p class="text-slate-400 text-sm mt-2">No data</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</section>
+
+<section class="card mt-4">
+    <h3 class="text-lg font-semibold">Timeline Settings</h3>
+    <div class="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div>
+            <label class="metric-label" for="rangeSelect">Range</label>
+            <select id="rangeSelect" class="input mt-2" style="width: 100%; max-width: 16rem;">
+                <option value="all">All time</option>
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="180">Last 180 days</option>
+                <option value="365">Last 365 days</option>
+                <option value="730">Last 2 years</option>
+            </select>
+        </div>
+        <div>
+            <p class="metric-label">Time Controls</p>
+            <div class="mt-2 flex flex-wrap gap-2">
+                <label class="tag"><input type="checkbox" class="perf-toggle mr-1" value="bullet" checked>Bullet</label>
+                <label class="tag"><input type="checkbox" class="perf-toggle mr-1" value="blitz" checked>Blitz</label>
+                <label class="tag"><input type="checkbox" class="perf-toggle mr-1" value="rapid" checked>Rapid</label>
+                <label class="tag"><input type="checkbox" class="perf-toggle mr-1" value="classical" checked>Classical</label>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card mt-4">
+    <h3 class="text-lg font-semibold">Rating Timeline</h3>
+    <canvas id="ratingHistoryChart" height="120" class="mt-4"></canvas>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const rawHistory = {{ history|tojson }};
+    const perfOrder = ["bullet", "blitz", "rapid", "classical"];
+    const perfColors = {
+        bullet: "#f43f5e",
+        blitz: "#fb923c",
+        rapid: "#3a9ad9",
+        classical: "#19c37d"
+    };
+    const chartElement = document.getElementById("ratingHistoryChart");
+    const rangeSelect = document.getElementById("rangeSelect");
+    const perfToggles = Array.from(document.querySelectorAll(".perf-toggle"));
+
+    const allDates = Array.from(
+        new Set(
+            perfOrder.flatMap(perf => (rawHistory[perf] || []).map(entry => entry.date))
+        )
+    ).sort();
+
+    const chart = new Chart(chartElement, {
+        type: "line",
+        data: {
+            labels: [],
+            datasets: []
+        },
+        options: {
+            interaction: {
+                mode: "index",
+                intersect: false
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#cbd5e1"
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {color: "#9ca3af"}
+                },
+                y: {
+                    ticks: {color: "#9ca3af"},
+                    title: {
+                        display: true,
+                        text: "Rating",
+                        color: "#9ca3af"
+                    }
+                }
+            }
+        }
+    });
+
+    function getVisibleDates(daysValue) {
+        if (!allDates.length || daysValue === "all") {
+            return allDates;
+        }
+        const maxDate = new Date(allDates[allDates.length - 1] + "T00:00:00");
+        const minDate = new Date(maxDate);
+        minDate.setDate(minDate.getDate() - Number(daysValue));
+        const minDateKey = minDate.toISOString().slice(0, 10);
+        return allDates.filter(dateKey => dateKey >= minDateKey);
+    }
+
+    function buildDatasets(visibleDates, enabledPerfs) {
+        return perfOrder
+            .filter(perf => enabledPerfs.includes(perf))
+            .map(perf => {
+                const entries = rawHistory[perf] || [];
+                const ratingByDate = new Map(entries.map(entry => [entry.date, entry.rating]));
+                return {
+                    label: perf.charAt(0).toUpperCase() + perf.slice(1),
+                    data: visibleDates.map(date => ratingByDate.has(date) ? ratingByDate.get(date) : null),
+                    borderColor: perfColors[perf],
+                    backgroundColor: perfColors[perf],
+                    tension: 0.2,
+                    spanGaps: true,
+                    pointRadius: 2,
+                    pointHoverRadius: 4
+                };
+            });
+    }
+
+    function updateChart() {
+        const enabledPerfs = perfToggles
+            .filter(toggle => toggle.checked)
+            .map(toggle => toggle.value);
+        const visibleDates = getVisibleDates(rangeSelect.value);
+
+        chart.data.labels = visibleDates;
+        chart.data.datasets = buildDatasets(visibleDates, enabledPerfs);
+        chart.update();
+    }
+
+    rangeSelect.addEventListener("change", updateChart);
+    perfToggles.forEach(toggle => toggle.addEventListener("change", updateChart));
+    updateChart();
+</script>
+{% endblock %}
