@@ -25,12 +25,20 @@ def analyze_time_management(games: list[Game]) -> dict[str, Any]:
     sources: list[str] = []
 
     for game in games:
+        samples = _extract_move_times_from_clock_array(game.clock_data, game.user_color or "white")
+        if samples:
+            all_move_times.extend(samples["move_times"])
+            panic_samples += samples["panic_moves"]
+            total_samples += samples["sample_size"]
+            sources.append("clock_array")
+            continue
+
         samples = _extract_move_times_from_pgn(game.pgn, game.user_color or "white", game.time_control)
         if samples:
             all_move_times.extend(samples["move_times"])
             panic_samples += samples["panic_moves"]
             total_samples += samples["sample_size"]
-            sources.append("real")
+            sources.append("pgn")
         else:
             simulated = _simulate_move_times(game)
             all_move_times.extend(simulated)
@@ -47,7 +55,12 @@ def analyze_time_management(games: list[Game]) -> dict[str, Any]:
     panic_ratio = round(float((panic_samples / max(total_samples, 1)) * 100), 2)
 
     score = min(100.0, (fast_ratio * 0.5) + (panic_ratio * 0.8))
-    source = "real" if "real" in sources else "simulated"
+    if "clock_array" in sources:
+        source = "clock_array"
+    elif "pgn" in sources:
+        source = "pgn"
+    else:
+        source = "simulated"
 
     return {
         "average_move_time": avg_time,
@@ -56,6 +69,31 @@ def analyze_time_management(games: list[Game]) -> dict[str, Any]:
         "time_pressure_score": round(float(score), 2),
         "source": source,
     }
+
+
+def _extract_move_times_from_clock_array(clock_data: Any, user_color: str) -> dict[str, Any] | None:
+    if not isinstance(clock_data, list):
+        return None
+    if not clock_data or not all(isinstance(v, int) for v in clock_data):
+        return None
+
+    target_is_white = user_color == "white"
+    user_clocks_ms = [
+        value for index, value in enumerate(clock_data) if (index % 2 == 0) == target_is_white
+    ]
+
+    if len(user_clocks_ms) < 2:
+        return None
+
+    move_times = [
+        max(0.0, (previous - current) / 1000.0)
+        for previous, current in zip(user_clocks_ms, user_clocks_ms[1:])
+    ]
+    if not move_times:
+        return None
+
+    panic_moves = sum(1 for value in user_clocks_ms if value < 10_000)
+    return {"move_times": move_times, "panic_moves": panic_moves, "sample_size": len(user_clocks_ms)}
 
 
 def _extract_move_times_from_pgn(pgn: str, user_color: str, time_control: str | None) -> dict[str, Any] | None:

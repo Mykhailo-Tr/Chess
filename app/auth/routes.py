@@ -8,7 +8,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 from app.auth import auth_bp
 from app.extensions import db
-from app.lichess.client import LichessClient
+from app.lichess.client import LichessClient, generate_pkce_pair
 from app.models import User
 
 
@@ -23,15 +23,18 @@ def login():
 def connect_lichess():
     client = LichessClient.from_app(current_app)
     if not current_app.config["LICHESS_CLIENT_ID"]:
-        flash("Lichess OAuth is not configured. Set LICHESS_CLIENT_ID and LICHESS_CLIENT_SECRET.", "danger")
+        flash("Lichess OAuth is not configured. Set LICHESS_CLIENT_ID.", "danger")
         return redirect(url_for("auth.login"))
 
     state = secrets.token_urlsafe(32)
+    code_verifier, code_challenge = generate_pkce_pair()
     session["oauth_state"] = state
+    session["code_verifier"] = code_verifier
     redirect_uri = url_for("auth.oauth_callback", _external=True)
     authorize_url = client.build_authorize_url(
         redirect_uri=redirect_uri,
         state=state,
+        code_challenge=code_challenge,
         scope="preference:read",
     )
     return redirect(authorize_url)
@@ -46,15 +49,20 @@ def oauth_callback():
     code = request.args.get("code")
     state = request.args.get("state")
     expected_state = session.pop("oauth_state", None)
+    code_verifier = session.pop("code_verifier", None)
 
-    if not code or not state or state != expected_state:
+    if not code or not state or state != expected_state or not code_verifier:
         flash("Invalid OAuth callback state.", "danger")
         return redirect(url_for("auth.login"))
 
     client = LichessClient.from_app(current_app)
     redirect_uri = url_for("auth.oauth_callback", _external=True)
 
-    token_data = client.exchange_code_for_token(code=code, redirect_uri=redirect_uri)
+    token_data = client.exchange_code_for_token(
+        code=code,
+        redirect_uri=redirect_uri,
+        code_verifier=code_verifier,
+    )
     access_token = token_data.get("access_token")
     if not access_token:
         flash("Could not obtain Lichess token.", "danger")
@@ -78,7 +86,6 @@ def oauth_callback():
 
     user.username = username
     user.access_token = access_token
-    user.refresh_token = token_data.get("refresh_token")
     user.token_expires_at = expires_at
     user.ratings_snapshot = _extract_ratings(profile)
     user.last_synced_at = datetime.now(UTC)

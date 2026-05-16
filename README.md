@@ -80,14 +80,19 @@ README.md
 
 Copy `.env.example` to `.env` and fill values:
 
-- `SECRET_KEY`
-- `LICHESS_CLIENT_ID`
-- `LICHESS_CLIENT_SECRET`
-- `LICHESS_OAUTH_AUTHORIZE_URL` (default: `https://lichess.org/oauth`)
-- `LICHESS_OAUTH_TOKEN_URL` (default: `https://lichess.org/api/token`)
-- `LICHESS_API_BASE` (default: `https://lichess.org/api`)
-- `DATABASE_URL` (SQLite locally, PostgreSQL in production)
-- `FLASK_ENV`
+| Variable | Required | Description |
+|---|---|---|
+| `SECRET_KEY` | Yes | Flask session signing key. Use a strong random value in production. |
+| `LICHESS_CLIENT_ID` | Yes | Self-chosen unique app string (no registration needed), e.g. `my-chess-app`. |
+| `LICHESS_OAUTH_AUTHORIZE_URL` | No | OAuth authorize endpoint. Default: `https://lichess.org/oauth`. |
+| `LICHESS_OAUTH_TOKEN_URL` | No | OAuth token endpoint. Default: `https://lichess.org/api/token`. |
+| `LICHESS_API_BASE` | No | Lichess API base URL. Default: `https://lichess.org/api`. |
+| `DATABASE_URL` | Yes | `sqlite:///...` for local or PostgreSQL URL for production. |
+| `FLASK_ENV` | No | Flask environment (`development` / `production`). |
+| `SESSION_COOKIE_SECURE` | No | Set `1` behind HTTPS in production. |
+| `REMEMBER_COOKIE_SECURE` | No | Set `1` behind HTTPS in production. |
+| `REDIS_URL` | No | Placeholder for future background jobs/caching. |
+| `ENABLE_BACKGROUND_JOBS` | No | Placeholder flag (`0` or `1`). |
 
 ## Local Setup (Without Docker)
 
@@ -100,7 +105,7 @@ Copy `.env.example` to `.env` and fill values:
    ```bash
    cp .env.example .env
    ```
-4. Set your Lichess OAuth app credentials in `.env`.
+4. Set your `LICHESS_CLIENT_ID` in `.env` (self-chosen value, no client secret).
 5. Run app:
    ```bash
    python run.py
@@ -125,9 +130,9 @@ Notes:
 
 1. User opens login page.
 2. Clicks **Connect Lichess**.
-3. App redirects to Lichess OAuth consent.
-4. Lichess redirects back to `/auth/callback`.
-5. App exchanges code for token and stores linked user.
+3. App generates PKCE values (`code_verifier`, `code_challenge`) and redirects to Lichess OAuth consent.
+4. Lichess redirects back to `/auth/callback` with authorization code.
+5. App exchanges code + PKCE verifier for an access token and stores linked user.
 
 ## Behavioral Analytics Included
 

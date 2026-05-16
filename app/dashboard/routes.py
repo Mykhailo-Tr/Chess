@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from flask import redirect, render_template, url_for
 from flask_login import current_user, login_required
+from sqlalchemy import case
 
 from app.analytics.reports import latest_or_create_report
 from app.dashboard import dashboard_bp
@@ -20,7 +21,11 @@ def home():
 def dashboard_home():
     games = (
         Game.query.filter_by(user_id=current_user.id)
-        .order_by(Game.played_at.desc().nullslast(), Game.created_at.desc())
+        .order_by(
+            case((Game.played_at.is_(None), 1), else_=0),
+            Game.played_at.desc(),
+            Game.created_at.desc(),
+        )
         .all()
     )
     report = latest_or_create_report(current_user, games)

@@ -15,6 +15,7 @@ class Game(db.Model):
     pgn = db.Column(db.Text, nullable=False)
     result = db.Column(db.String(12), nullable=False)  # WIN | LOSS | DRAW
     opening = db.Column(db.String(255), nullable=True)
+    eco = db.Column(db.String(8), nullable=True)  # ECO code e.g. "B20"
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
     played_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
 
@@ -26,6 +27,7 @@ class Game(db.Model):
     rating = db.Column(db.Integer, nullable=True)
     moves_count = db.Column(db.Integer, nullable=True)
     clock_data = db.Column(db.JSON, nullable=True)
+    division_json = db.Column(db.JSON, nullable=True)  # {"middle": ply, "end": ply}
     metadata_json = db.Column(db.JSON, nullable=True)
 
     user = db.relationship("User", back_populates="games")

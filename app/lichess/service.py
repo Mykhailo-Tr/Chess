@@ -39,6 +39,7 @@ def sync_recent_games(user: User, max_games: int = 50) -> int:
             pgn=raw_game.get("pgn", ""),
             result=_resolve_result(raw_game, user.username),
             opening=_resolve_opening(raw_game),
+            eco=_resolve_eco(raw_game),
             played_at=_resolve_played_at(raw_game),
             opponent=_resolve_opponent(raw_game, user.username),
             user_color=_resolve_color(raw_game, user.username),
@@ -48,6 +49,7 @@ def sync_recent_games(user: User, max_games: int = 50) -> int:
             rating=_resolve_rating(raw_game, user.username),
             moves_count=raw_game.get("turns"),
             clock_data=raw_game.get("clocks") or raw_game.get("clock"),
+            division_json=raw_game.get("division"),
             metadata_json={
                 "rated": raw_game.get("rated"),
                 "variant": raw_game.get("variant"),
@@ -66,6 +68,13 @@ def _resolve_opening(raw_game: dict[str, Any]) -> str:
     if isinstance(opening, dict):
         return opening.get("name") or "Unknown Opening"
     return "Unknown Opening"
+
+
+def _resolve_eco(raw_game: dict[str, Any]) -> str | None:
+    opening = raw_game.get("opening")
+    if isinstance(opening, dict):
+        return opening.get("eco")
+    return None
 
 
 def _resolve_color(raw_game: dict[str, Any], username: str) -> str:

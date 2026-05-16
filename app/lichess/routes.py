@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from flask import flash, redirect, request, url_for
 from flask_login import current_user, login_required
+from sqlalchemy import case
 
 from app.analytics.reports import create_analysis_report
 from app.lichess import lichess_bp
@@ -19,7 +20,11 @@ def import_recent_games():
         imported_count = sync_recent_games(current_user, max_games=max_games)
         games = (
             Game.query.filter_by(user_id=current_user.id)
-            .order_by(Game.played_at.desc().nullslast(), Game.created_at.desc())
+            .order_by(
+                case((Game.played_at.is_(None), 1), else_=0),
+                Game.played_at.desc(),
+                Game.created_at.desc(),
+            )
             .all()
         )
         create_analysis_report(current_user, games)

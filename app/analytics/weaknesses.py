@@ -18,11 +18,22 @@ def analyze_weaknesses(games: list[Game]) -> dict[str, Any]:
         opening = (game.opening or "").lower()
         result = game.result
         move_count = game.moves_count or 0
+        division = game.division_json or {}
+        endgame_ply = division.get("end")
+        middle_ply = division.get("middle")
 
-        if result == "LOSS" and move_count >= 60:
+        if result == "LOSS" and endgame_ply and move_count and (move_count * 2) > endgame_ply:
             endgame_losses += 1
-        if result == "LOSS" and 25 <= move_count <= 50:
+        elif result == "LOSS" and not endgame_ply and move_count >= 60:
+            endgame_losses += 1
+
+        if result == "LOSS" and middle_ply:
+            game_ply = (move_count or 0) * 2
+            if middle_ply <= game_ply < (endgame_ply or game_ply + 1):
+                equal_middlegame_losses += 1
+        elif result == "LOSS" and not middle_ply and 25 <= (move_count or 0) <= 50:
             equal_middlegame_losses += 1
+
         if result == "LOSS" and "gambit" in opening:
             gambit_losses += 1
 
