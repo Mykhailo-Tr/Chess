@@ -9,6 +9,7 @@ from sqlalchemy import case
 from app.analytics.color_analysis import analyze_by_color
 from app.analytics.eco_heatmap import build_eco_heatmap
 from app.analytics.opponent_analysis import analyze_opponent_strength
+from app.analytics.perf_stats import parse_perf_stats
 from app.analytics.puzzle_stats import parse_puzzle_dashboard
 from app.analytics.rating_history import parse_rating_history
 from app.analytics.session_stats import build_calendar_heatmap, build_session_stats
@@ -20,6 +21,7 @@ from app.models import Game
 
 VALID_SPEEDS = {"bullet", "blitz", "rapid", "classical"}
 VALID_PUZZLE_DAYS = {7, 30, 60, 90}
+VALID_PERFS = {"bullet", "blitz", "rapid", "classical"}
 
 
 def _normalize_speed(value: str | None) -> str | None:
@@ -193,3 +195,183 @@ def eco_map():
         eco_stats=eco_stats,
         active_speed=active_speed,
     )
+
+
+@analytics_bp.route("/perf/<perf>")
+@login_required
+def perf_stats(perf: str):
+    normalized_perf = (perf or "").strip().lower()
+    if normalized_perf not in VALID_PERFS:
+        normalized_perf = "blitz"
+
+    stats = {
+        "perf": normalized_perf,
+        "rating": 0,
+        "rd": 0.0,
+        "prog": 0,
+        "nb": 0,
+        "percentile": 0.0,
+        "peak_rating": 0,
+        "streak": {"current": 0, "max": 0},
+        "best_wins": [],
+        "worst_losses": [],
+    }
+    rating_series: list[dict] = []
+
+    try:
+        if not current_user.access_token:
+            raise ValueError("Missing Lichess access token")
+
+        client = LichessClient.from_app(current_app)
+        raw_stats = client.get_perf_stats(
+            username=current_user.username,
+            perf=normalized_perf,
+            access_token=current_user.access_token,
+        )
+        stats = parse_perf_stats(raw_stats, normalized_perf)
+
+        raw_history = client.get_rating_history(current_user.username, current_user.access_token)
+        parsed_history = parse_rating_history(raw_history)
+        rating_series = parsed_history.get(normalized_perf, [])
+    except Exception:  # noqa: BLE001 - keep page available for missing/empty stats
+        pass
+
+    return render_template(
+        "analytics/perf_stats.html",
+        stats=stats,
+        active_perf=normalized_perf,
+        rating_series=rating_series,
+    )
+
+
+@analytics_bp.route("/compare")
+@login_required
+def compare_player():
+    opponent = (request.args.get("opponent") or "").strip()
+
+    comparison = None
+    if opponent:
+        client = LichessClient.from_app(current_app)
+        opponent_key = opponent.lower()
+        local_games = (
+            Game.query.filter_by(user_id=current_user.id)
+            .filter(Game.opponent.ilike(opponent))
+            .all()
+        )
+        local_wins = sum(1 for game in local_games if game.result == "WIN")
+        local_draws = sum(1 for game in local_games if game.result == "DRAW")
+        local_losses = sum(1 for game in local_games if game.result == "LOSS")
+        local_total = len(local_games)
+        local_winrate = round((local_wins / max(local_total, 1)) * 100, 2)
+
+        try:
+            me_profile = client.get_user(current_user.username)
+            opponent_profile = client.get_user(opponent)
+            crosstable = client.get_crosstable(current_user.username, opponent, current_user.access_token or "")
+        except Exception:  # noqa: BLE001 - render with local stats only when remote fails
+            me_profile = {}
+            opponent_profile = {}
+            crosstable = {}
+
+        comparison = {
+            "opponent_query": opponent,
+            "me": _build_profile_summary(me_profile, fallback_name=current_user.username),
+            "opponent": _build_profile_summary(opponent_profile, fallback_name=opponent),
+            "crosstable": crosstable if isinstance(crosstable, dict) else {},
+            "crosstable_summary": _extract_crosstable_summary(
+                crosstable if isinstance(crosstable, dict) else {},
+                user1=current_user.username,
+                user2=opponent,
+            ),
+            "local": {
+                "wins": local_wins,
+                "draws": local_draws,
+                "losses": local_losses,
+                "total": local_total,
+                "winrate": local_winrate,
+            },
+            "opponent_key": opponent_key,
+        }
+
+    return render_template(
+        "analytics/compare.html",
+        comparison=comparison,
+    )
+
+
+def _build_profile_summary(profile: dict, *, fallback_name: str) -> dict:
+    if not isinstance(profile, dict):
+        profile = {}
+
+    perfs = profile.get("perfs")
+    if not isinstance(perfs, dict):
+        perfs = {}
+
+    count = profile.get("count")
+    if not isinstance(count, dict):
+        count = {}
+
+    created_at_ms = profile.get("createdAt")
+    join_date = "N/A"
+    if isinstance(created_at_ms, int):
+        join_date = datetime.fromtimestamp(created_at_ms / 1000, tz=UTC).strftime("%Y-%m-%d")
+
+    return {
+        "username": profile.get("username") or fallback_name,
+        "ratings": {
+            "bullet": _extract_perf_rating(perfs.get("bullet")),
+            "blitz": _extract_perf_rating(perfs.get("blitz")),
+            "rapid": _extract_perf_rating(perfs.get("rapid")),
+        },
+        "games_all": int(count.get("all") or 0),
+        "join_date": join_date,
+    }
+
+
+def _extract_perf_rating(perf_blob: object) -> int:
+    if isinstance(perf_blob, dict):
+        value = perf_blob.get("rating")
+        if isinstance(value, int):
+            return value
+        try:
+            return int(value or 0)
+        except (TypeError, ValueError):
+            return 0
+    return 0
+
+
+def _extract_crosstable_summary(crosstable: dict, *, user1: str, user2: str) -> dict:
+    if not isinstance(crosstable, dict):
+        crosstable = {}
+
+    matchup = crosstable.get("matchup")
+    if not isinstance(matchup, dict):
+        matchup = crosstable
+
+    users = matchup.get("users")
+    if not isinstance(users, dict):
+        users = {}
+
+    score_user1 = users.get(user1) or users.get(user1.lower()) or users.get(user1.capitalize()) or 0
+    score_user2 = users.get(user2) or users.get(user2.lower()) or users.get(user2.capitalize()) or 0
+
+    try:
+        score_user1 = float(score_user1)
+    except (TypeError, ValueError):
+        score_user1 = 0.0
+    try:
+        score_user2 = float(score_user2)
+    except (TypeError, ValueError):
+        score_user2 = 0.0
+
+    total_games = matchup.get("nbGames") or crosstable.get("nbGames") or 0
+    try:
+        total_games = int(total_games)
+    except (TypeError, ValueError):
+        total_games = 0
+
+    return {
+        "score_user1": score_user1,
+        "score_user2": score_user2,
+        "total_games": total_games,
+    }

@@ -87,3 +87,37 @@ class LichessClient:
         )
         response.raise_for_status()
         return response.json()
+
+    def get_perf_stats(self, username: str, perf: str, access_token: str) -> dict[str, Any]:
+        response = requests.get(
+            f"{self.api_base}/user/{username}/perf/{perf}",
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {access_token}",
+            },
+            timeout=20,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def get_user(self, username: str) -> dict[str, Any]:
+        response = requests.get(
+            f"{self.api_base}/user/{username}",
+            headers={"Accept": "application/json"},
+            timeout=20,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def get_crosstable(self, user1: str, user2: str, access_token: str) -> dict[str, Any]:
+        response = requests.get(
+            f"{self.api_base}/crosstable/{user1}/{user2}",
+            params={"matchup": "true"},
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {access_token}",
+            },
+            timeout=20,
+        )
+        response.raise_for_status()
+        return response.json()
