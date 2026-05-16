@@ -5,7 +5,7 @@
 <p class="text-slate-400 text-sm mt-1">Simple heuristics on recurring loss patterns.</p>
 
 <section class="space-y-4 mt-6">
-    {% for weakness in payload.weaknesses.items %}
+{% for weakness in payload.weaknesses["items"] %}
     <article class="card">
         <div class="flex items-start justify-between gap-4">
             <div>
