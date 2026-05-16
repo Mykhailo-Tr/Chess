@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Chess Behavioral Analytics{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        panel: "#131820",
+                        panelSoft: "#1b2330",
+                        ink: "#dde6f2",
+                        accent: "#19c37d",
+                        accent2: "#3a9ad9"
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body class="h-full bg-slate-950 text-ink">
+    {% if current_user.is_authenticated %}
+    <div class="min-h-full lg:flex">
+        <aside class="w-full lg:w-64 bg-panel border-b lg:border-b-0 lg:border-r border-slate-800 px-4 py-6">
+            <h1 class="text-lg font-semibold">Behavioral Chess</h1>
+            <p class="text-sm text-slate-400 mt-1">@{{ current_user.username }}</p>
+            <nav class="mt-8 space-y-2">
+                <a class="nav-link" href="{{ url_for('dashboard.dashboard_home') }}">Dashboard</a>
+                <a class="nav-link" href="{{ url_for('analytics.analytics_home') }}">Analytics</a>
+                <a class="nav-link" href="{{ url_for('analytics.openings') }}">Openings</a>
+                <a class="nav-link" href="{{ url_for('analytics.weaknesses') }}">Weaknesses</a>
+            </nav>
+            <form class="mt-8" method="post" action="{{ url_for('auth.logout') }}">
+                <button class="btn-secondary w-full" type="submit">Logout</button>
+            </form>
+        </aside>
+        <main class="flex-1 p-4 md:p-8">
+            {% include "partials/flash.html" %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% else %}
+    <main class="min-h-full">
+        {% include "partials/flash.html" %}
+        {% block public_content %}{% endblock %}
+    </main>
+    {% endif %}
+    {% block scripts %}{% endblock %}
+</body>
+</html>

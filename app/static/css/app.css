@@ -1,0 +1,100 @@
+.nav-link {
+    display: block;
+    border: 1px solid #273143;
+    background: #1b2330;
+    padding: 0.55rem 0.75rem;
+    border-radius: 0.6rem;
+    color: #d8e4f3;
+    font-size: 0.92rem;
+}
+
+.nav-link:hover {
+    border-color: #3a9ad9;
+    color: #ffffff;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #19c37d, #3a9ad9);
+    color: #04131c;
+    padding: 0.6rem 1rem;
+    border-radius: 0.6rem;
+    font-weight: 700;
+    font-size: 0.92rem;
+}
+
+.btn-secondary {
+    background: #1b2330;
+    color: #d7e3f0;
+    border: 1px solid #2d3a4f;
+    padding: 0.6rem 1rem;
+    border-radius: 0.6rem;
+    font-weight: 600;
+    font-size: 0.92rem;
+}
+
+.card {
+    background: #131820;
+    border: 1px solid #293448;
+    border-radius: 0.85rem;
+    padding: 1rem;
+}
+
+.metric-label {
+    color: #8fa1ba;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+.metric-value {
+    color: #f8fafc;
+    font-size: 1.45rem;
+    font-weight: 700;
+    margin-top: 0.25rem;
+}
+
+.tag {
+    border: 1px solid #334155;
+    color: #c5d2e2;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+}
+
+.input {
+    background: #0b1220;
+    border: 1px solid #334155;
+    border-radius: 0.55rem;
+    color: #f1f5f9;
+    padding: 0.55rem 0.7rem;
+    width: 6rem;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #273143;
+    padding-bottom: 0.4rem;
+}
+
+.severity {
+    font-size: 0.75rem;
+    border-radius: 999px;
+    padding: 0.25rem 0.6rem;
+    font-weight: 600;
+}
+
+.severity-low {
+    background: rgba(56, 189, 248, 0.15);
+    color: #7dd3fc;
+}
+
+.severity-medium {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fcd34d;
+}
+
+.severity-high {
+    background: rgba(244, 63, 94, 0.2);
+    color: #fb7185;
+}

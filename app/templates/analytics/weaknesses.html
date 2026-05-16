@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Weaknesses{% endblock %}
+{% block content %}
+<h2 class="text-2xl font-semibold">Weakness Detection</h2>
+<p class="text-slate-400 text-sm mt-1">Simple heuristics on recurring loss patterns.</p>
+
+<section class="space-y-4 mt-6">
+    {% for weakness in payload.weaknesses.items %}
+    <article class="card">
+        <div class="flex items-start justify-between gap-4">
+            <div>
+                <h3 class="text-lg font-semibold">{{ weakness.label }}</h3>
+                <p class="text-sm text-slate-300 mt-1">{{ weakness.insight }}</p>
+            </div>
+            <span class="severity severity-{{ weakness.severity|lower }}">{{ weakness.severity }}</span>
+        </div>
+        <div class="mt-4 text-sm row">
+            <span>Losses matching heuristic</span>
+            <span>{{ weakness.losses }} ({{ weakness.ratio }}%)</span>
+        </div>
+    </article>
+    {% else %}
+    <div class="card">
+        <p class="text-slate-400">No games available. Import games to unlock weakness insights.</p>
+    </div>
+    {% endfor %}
+</section>
+{% endblock %}

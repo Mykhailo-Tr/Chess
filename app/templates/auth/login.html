@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Connect Lichess{% endblock %}
+{% block public_content %}
+<section class="relative overflow-hidden min-h-screen flex items-center justify-center px-6 py-16">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(25,195,125,0.25),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(58,154,217,0.2),transparent_30%)]"></div>
+    <div class="relative w-full max-w-2xl rounded-2xl bg-panel/90 border border-slate-800 shadow-2xl p-8 md:p-12">
+        <p class="uppercase tracking-[0.2em] text-xs text-accent2 mb-3">Chess Behavioral Analytics Platform</p>
+        <h1 class="text-3xl md:text-4xl font-bold leading-tight">Understand habits, not only moves.</h1>
+        <p class="text-slate-300 mt-4">
+            Connect your Lichess account and get insight into tilt, opening trends, time pressure, and recurring weaknesses.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3 text-sm">
+            <span class="tag">Tilt Detection</span>
+            <span class="tag">Opening Insights</span>
+            <span class="tag">Time Management</span>
+            <span class="tag">Weakness Reports</span>
+        </div>
+        <a href="{{ url_for('auth.connect_lichess') }}" class="btn-primary mt-10 inline-flex">
+            Connect Lichess
+        </a>
+    </div>
+</section>
+{% endblock %}

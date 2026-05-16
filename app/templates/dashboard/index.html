@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+        <h2 class="text-2xl font-semibold">Dashboard</h2>
+        <p class="text-slate-400 text-sm mt-1">Behavior summary for @{{ current_user.username }}</p>
+    </div>
+    <form method="post" action="{{ url_for('lichess.import_recent_games') }}" class="flex gap-2 items-center">
+        <input
+            class="input"
+            type="number"
+            name="max_games"
+            min="1"
+            max="200"
+            value="50"
+            title="Number of recent games">
+        <button class="btn-primary" type="submit">Import Recent Games</button>
+    </form>
+</div>
+
+<section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6">
+    <div class="card"><p class="metric-label">Games Analyzed</p><p class="metric-value">{{ payload.games_analyzed }}</p></div>
+    <div class="card"><p class="metric-label">Winrate</p><p class="metric-value">{{ payload.winrate }}%</p></div>
+    <div class="card"><p class="metric-label">Tilt Score</p><p class="metric-value">{{ payload.tilt.score }} ({{ payload.tilt.level }})</p></div>
+    <div class="card"><p class="metric-label">Time Pressure</p><p class="metric-value">{{ payload.time_management.time_pressure_score }}</p></div>
+</section>
+
+<section class="grid grid-cols-1 xl:grid-cols-3 gap-4 mt-4">
+    <div class="card xl:col-span-2">
+        <h3 class="text-lg font-semibold mb-3">Opening Frequency</h3>
+        <canvas id="openingsChart" height="120"></canvas>
+    </div>
+    <div class="card">
+        <h3 class="text-lg font-semibold mb-3">Results</h3>
+        <canvas id="resultsChart" height="120"></canvas>
+    </div>
+</section>
+
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+    <div class="card">
+        <h3 class="text-lg font-semibold">Current Ratings</h3>
+        <div class="mt-3 space-y-2 text-sm">
+            {% if ratings %}
+                {% for perf, rating in ratings.items() %}
+                <div class="flex justify-between border-b border-slate-800 pb-1">
+                    <span class="capitalize text-slate-400">{{ perf }}</span>
+                    <span class="font-semibold">{{ rating }}</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-slate-400">No rating snapshot yet. Import games to refresh profile metrics.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card">
+        <h3 class="text-lg font-semibold">Signals</h3>
+        <ul class="mt-3 text-sm space-y-2">
+            <li class="flex justify-between"><span class="text-slate-400">Average Accuracy (placeholder)</span><span>{{ payload.avg_accuracy }}%</span></li>
+            <li class="flex justify-between"><span class="text-slate-400">Fast Move Ratio</span><span>{{ payload.time_management.fast_move_ratio }}%</span></li>
+            <li class="flex justify-between"><span class="text-slate-400">Panic Move Ratio</span><span>{{ payload.time_management.panic_move_ratio }}%</span></li>
+            <li class="flex justify-between"><span class="text-slate-400">Clock Data Source</span><span class="uppercase">{{ payload.time_management.source }}</span></li>
+        </ul>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const openingsRaw = {{ openings_chart|tojson }};
+    const resultsRaw = {{ results_chart|tojson }};
+
+    new Chart(document.getElementById("openingsChart"), {
+        type: "bar",
+        data: {
+            labels: openingsRaw.map(item => item.opening),
+            datasets: [{
+                label: "Games",
+                data: openingsRaw.map(item => item.games),
+                borderRadius: 8,
+                backgroundColor: "rgba(58,154,217,0.7)"
+            }]
+        },
+        options: {
+            plugins: {legend: {display: false}},
+            scales: {
+                x: {ticks: {color: "#9ca3af"}},
+                y: {ticks: {color: "#9ca3af"}, beginAtZero: true}
+            }
+        }
+    });
+
+    new Chart(document.getElementById("resultsChart"), {
+        type: "doughnut",
+        data: {
+            labels: ["Wins", "Draws", "Losses"],
+            datasets: [{
+                data: resultsRaw,
+                backgroundColor: ["#19c37d", "#3a9ad9", "#f43f5e"]
+            }]
+        }
+    });
+</script>
+{% endblock %}
